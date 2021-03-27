@@ -6,28 +6,30 @@ use crate::error::Result;
 pub struct Args {
     pub dir: String,
     pub show_hidden: bool,
+    pub directories_only: bool,
 }
 
 impl Args {
     pub fn parse_cli() -> Result<Args> {
         let matches = App::new("tree")
             .version("0.1.0")
-            .about("list contents of directories in a tree-like format")
+            .about("List the contents of directories in a tree-like format.")
             .arg(
                 Arg::with_name("directory")
-                    .help("directory to list")
+                    .help("Directory to list")
                     .takes_value(true),
             )
             .arg(
-                Arg::with_name("all")
-                    .short("a")
-                    .long("all")
-                    .help("show hidden files"),
+                Arg::with_name("directories")
+                    .short("d")
+                    .help("List directories only"),
             )
+            .arg(Arg::with_name("all").short("a").help("Show hidden files"))
             .get_matches();
         Ok(Args {
             dir: Args::dir(&matches),
             show_hidden: Args::is_enabled(&matches, "all"),
+            directories_only: Args::is_enabled(&matches, "directories"),
         })
     }
 
