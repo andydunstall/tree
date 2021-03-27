@@ -6,17 +6,18 @@ use crate::formatter::Formatter;
 use crate::fs::FS;
 use crate::matcher::Matcher;
 
-pub struct Tree<F> {
+pub struct Tree<F, M> {
     matcher: Matcher,
     fs: F,
-    formatter: Formatter,
+    formatter: M,
 }
 
-impl<F> Tree<F>
+impl<F, M> Tree<F, M>
 where
     F: FS,
+    M: Formatter,
 {
-    pub fn new(matcher: Matcher, fs: F, formatter: Formatter) -> Tree<F> {
+    pub fn new(matcher: Matcher, fs: F, formatter: M) -> Tree<F, M> {
         Tree {
             matcher: matcher,
             fs: fs,
@@ -25,7 +26,7 @@ where
     }
 
     pub fn walk(&mut self, dir: &Path) -> Result<()> {
-        println!(
+        print!(
             "{}",
             self.formatter.file(&Entry {
                 file_name: dir.to_str().unwrap().to_string(),
@@ -34,7 +35,7 @@ where
             })
         );
         let (n_dirs, n_files) = self.walk_nested(dir, 1)?;
-        println!("{}", self.formatter.summary(n_dirs, n_files));
+        print!("{}", self.formatter.summary(n_dirs, n_files));
         Ok(())
     }
 
@@ -58,7 +59,7 @@ where
                         }
 
                         n_dirs += 1;
-                        println!(
+                        print!(
                             "{}",
                             self.formatter.file(&Entry {
                                 file_name: file_name.to_string(),
@@ -72,7 +73,7 @@ where
                         n_files += n_nested_files;
                     } else {
                         n_files += 1;
-                        println!(
+                        print!(
                             "{}",
                             self.formatter.file(&Entry {
                                 file_name: file_name.to_string(),

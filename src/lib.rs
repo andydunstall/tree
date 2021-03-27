@@ -1,4 +1,5 @@
 mod args;
+mod cli_formatter;
 mod entry;
 mod error;
 mod formatter;
@@ -9,6 +10,7 @@ mod tree;
 
 pub use crate::tree::Tree;
 pub use args::Args;
+pub use cli_formatter::CLIFormatter;
 pub use error::{Error, Result};
 pub use formatter::Formatter;
 pub use fs::FS;
