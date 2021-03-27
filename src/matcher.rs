@@ -17,21 +17,10 @@ impl Matcher {
         if self.directories_only && !path.is_dir() {
             return false;
         }
-
         if !self.show_hidden && self.is_hidden(path) {
             return false;
         }
-
         true
-    }
-
-    fn is_file_name_match(&self, file_name: &str) -> bool {
-        let hidden = file_name.starts_with(".");
-        if hidden && !self.show_hidden {
-            false
-        } else {
-            true
-        }
     }
 
     fn is_hidden(&self, path: &Path) -> bool {
