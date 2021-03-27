@@ -12,7 +12,7 @@ impl StdoutUI {
 impl UI for StdoutUI {
     fn file(&self, entry: &Entry) {
         let indent = entry.depth - 1;
-        let spacing = " ".repeat(indent * 4);
+        let spacing = "│   ".repeat(indent);
         let prefix = if entry.is_last {
             "└── "
         } else {
