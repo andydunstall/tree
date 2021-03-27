@@ -18,13 +18,13 @@ impl Args {
                     .short("d")
                     .long("dir")
                     .help("directory to list")
-                    .takes_value(true)
+                    .takes_value(true),
             )
             .arg(
                 Arg::with_name("all")
                     .short("a")
                     .long("all")
-                    .help("show hidden files")
+                    .help("show hidden files"),
             )
             .get_matches();
         Ok(Args {

@@ -1,22 +1,25 @@
-use std::fs;
 use std::path::Path;
 
 use crate::error::Result;
+use crate::fs::FS;
 use crate::matcher::Matcher;
 use crate::ui::UI;
 
-pub struct Tree<U> {
+pub struct Tree<F, U> {
     matcher: Matcher,
+    fs: F,
     ui: U,
 }
 
-impl<U> Tree<U>
+impl<F, U> Tree<F, U>
 where
+    F: FS,
     U: UI,
 {
-    pub fn new(matcher: Matcher, ui: U) -> Tree<U> {
+    pub fn new(matcher: Matcher, fs: F, ui: U) -> Tree<F, U> {
         Tree {
             matcher: matcher,
+            fs: fs,
             ui: ui,
         }
     }
@@ -30,24 +33,19 @@ where
             return Ok(());
         }
 
-        // TODO(AD) Only count those that match (not hidden)
-        let count = fs::read_dir(dir)?.count();
-        let mut n = 0;
-        for entry in fs::read_dir(dir)? {
-            n += 1;
-
-            let entry = entry?;
-            let path = entry.path();
-
+        for path in self.fs.list_dir(dir)? {
+            let path = path?;
             if !self.matcher.is_match(&path) {
                 continue;
             }
 
-            // TODO(AD) Remvoe unwrap
-            let name = path.file_name().unwrap().to_str().unwrap();
-            self.ui.file(name, depth, n == count);
-            if path.is_dir() {
-                self.walk_nested(&path, depth + 1)?;
+            if let Some(file_name) = path.file_name() {
+                if let Some(file_name) = file_name.to_str() {
+                    self.ui.file(file_name, depth, false);
+                    if path.is_dir() {
+                        self.walk_nested(&path, depth + 1)?;
+                    }
+                }
             }
         }
 
