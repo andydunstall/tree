@@ -11,13 +11,17 @@ impl StdoutUI {
 
 impl UI for StdoutUI {
     fn file(&self, entry: &Entry) {
-        let indent = entry.depth - 1;
-        let spacing = "│   ".repeat(indent);
-        let prefix = if entry.is_last {
-            "└── "
+        if entry.depth > 0 {
+            let indent = entry.depth - 1;
+            let spacing = "│   ".repeat(indent);
+            let prefix = if entry.is_last {
+                "└── "
+            } else {
+                "├── "
+            };
+            println!("{}{}{}", spacing, prefix, entry.file_name);
         } else {
-            "├── "
-        };
-        println!("{}{}{}", spacing, prefix, entry.file_name);
+            println!("{}", entry.file_name);
+        }
     }
 }

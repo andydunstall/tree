@@ -26,6 +26,11 @@ where
     }
 
     pub fn walk(&self, dir: &Path) -> Result<()> {
+        self.ui.file(&Entry {
+            file_name: dir.to_str().unwrap().to_string(),
+            depth: 0,
+            is_last: false,
+        });
         self.walk_nested(dir, 1)
     }
 
@@ -36,7 +41,6 @@ where
 
         let mut prev: Option<Entry> = None;
         for path in self.fs.list_dir(dir)? {
-            let path = path?;
             if !self.matcher.is_match(&path) {
                 continue;
             }
@@ -45,6 +49,7 @@ where
                 if let Some(file_name) = file_name.to_str() {
                     if let Some(ref entry) = prev {
                         self.ui.file(&entry);
+                        prev = None;
                     }
 
                     if path.is_dir() {

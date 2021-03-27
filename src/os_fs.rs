@@ -1,9 +1,9 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::vec::Vec;
 
-use crate::error::Result;
+use crate::error::{Error, Result};
 use crate::fs::FS;
-use crate::os_dir::OSDir;
 
 pub struct OSFS;
 
@@ -14,7 +14,19 @@ impl OSFS {
 }
 
 impl FS for OSFS {
-    fn list_dir(&self, dir: &Path) -> Result<OSDir> {
-        Ok(OSDir::new(fs::read_dir(dir)?))
+    fn list_dir(&self, dir: &Path) -> Result<Vec<PathBuf>> {
+        let mut paths = vec![];
+        for entry in fs::read_dir(dir)? {
+            match entry {
+                Ok(entry) => {
+                    paths.push(entry.path());
+                }
+                Err(err) => {
+                    return Err(Error::from(err));
+                }
+            }
+        }
+        paths.sort();
+        Ok(paths)
     }
 }
