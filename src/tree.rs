@@ -31,14 +31,18 @@ where
             depth: 0,
             is_last: false,
         });
-        self.walk_nested(dir, 1)
+        let (n_dirs, n_files) = self.walk_nested(dir, 1)?;
+        print!("\n{} directories, {} files", n_dirs, n_files);
+        Ok(())
     }
 
-    fn walk_nested(&self, dir: &Path, depth: usize) -> Result<()> {
+    fn walk_nested(&self, dir: &Path, depth: usize) -> Result<(usize, usize)> {
         if !dir.is_dir() {
-            return Ok(());
+            return Ok((0, 0));
         }
 
+        let mut n_dirs = 0;
+        let mut n_files = 0;
         let mut prev: Option<Entry> = None;
         for path in self.fs.list_dir(dir)? {
             if !self.matcher.is_match(&path) {
@@ -53,14 +57,18 @@ where
                     }
 
                     if path.is_dir() {
+                        n_dirs += 1;
                         self.ui.file(&Entry {
                             file_name: file_name.to_string(),
                             depth: depth,
                             is_last: false,
                         });
 
-                        self.walk_nested(&path, depth + 1)?;
+                        let (n_nested_dirs, n_nested_files) = self.walk_nested(&path, depth + 1)?;
+                        n_dirs += n_nested_dirs;
+                        n_files += n_nested_files;
                     } else {
+                        n_files += 1;
                         prev = Some(Entry {
                             file_name: file_name.to_string(),
                             depth: depth,
@@ -79,6 +87,6 @@ where
             });
         }
 
-        Ok(())
+        Ok((n_dirs, n_files))
     }
 }
