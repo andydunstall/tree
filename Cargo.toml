@@ -5,3 +5,4 @@ authors = ["Andrew Dunstall <andydunstall@hotmail.co.uk>"]
 edition = "2018"
 
 [dependencies]
+clap = "2.33.3"
