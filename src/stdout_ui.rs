@@ -1,4 +1,5 @@
-use crate::UI;
+use crate::entry::Entry;
+use crate::ui::UI;
 
 pub struct StdoutUI;
 
@@ -9,10 +10,14 @@ impl StdoutUI {
 }
 
 impl UI for StdoutUI {
-    fn file(&self, name: &str, depth: usize, is_last: bool) {
-        let indent = depth - 1;
+    fn file(&self, entry: &Entry) {
+        let indent = entry.depth - 1;
         let spacing = " ".repeat(indent * 4);
-        let prefix = if is_last { "└── " } else { "├── " };
-        println!("{}{}{}", spacing, prefix, name);
+        let prefix = if entry.is_last {
+            "└── "
+        } else {
+            "├── "
+        };
+        println!("{}{}{}", spacing, prefix, entry.file_name);
     }
 }

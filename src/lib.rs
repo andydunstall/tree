@@ -1,4 +1,5 @@
 mod args;
+mod entry;
 mod error;
 mod fs;
 mod matcher;
