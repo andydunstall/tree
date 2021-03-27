@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::entry::Entry;
 use crate::error::Result;
@@ -25,7 +25,7 @@ where
         }
     }
 
-    pub fn walk(&self, dir: &Path) -> Result<()> {
+    pub fn walk(&mut self, dir: &Path) -> Result<()> {
         self.ui.file(&Entry {
             file_name: dir.to_str().unwrap().to_string(),
             depth: 0,
@@ -36,32 +36,30 @@ where
         Ok(())
     }
 
-    fn walk_nested(&self, dir: &Path, depth: usize) -> Result<(usize, usize)> {
+    fn walk_nested(&mut self, dir: &Path, depth: usize) -> Result<(usize, usize)> {
         if !dir.is_dir() {
             return Ok((0, 0));
         }
 
+        self.ui.add_indent(depth - 1);
+
         let mut n_dirs = 0;
         let mut n_files = 0;
-        let mut prev: Option<Entry> = None;
-        for path in self.fs.list_dir(dir)? {
-            if !self.matcher.is_match(&path) {
-                continue;
-            }
-
+        let list = self.list_dir_matches(dir)?;
+        for i in 0..list.len() {
+            let path = &list[i];
             if let Some(file_name) = path.file_name() {
                 if let Some(file_name) = file_name.to_str() {
-                    if let Some(ref entry) = prev {
-                        self.ui.file(&entry);
-                        prev = None;
-                    }
-
                     if path.is_dir() {
+                        if i == list.len() - 1 {
+                            self.ui.remove_indent(depth - 1);
+                        }
+
                         n_dirs += 1;
                         self.ui.file(&Entry {
                             file_name: file_name.to_string(),
                             depth: depth,
-                            is_last: false,
+                            is_last: i == list.len() - 1,
                         });
 
                         let (n_nested_dirs, n_nested_files) = self.walk_nested(&path, depth + 1)?;
@@ -69,24 +67,27 @@ where
                         n_files += n_nested_files;
                     } else {
                         n_files += 1;
-                        prev = Some(Entry {
+                        self.ui.file(&Entry {
                             file_name: file_name.to_string(),
                             depth: depth,
-                            is_last: false,
+                            is_last: i == list.len() - 1,
                         });
                     }
                 }
             }
         }
-
-        if let Some(ref entry) = prev {
-            self.ui.file(&Entry {
-                file_name: entry.file_name.clone(),
-                depth: entry.depth,
-                is_last: true,
-            });
-        }
+        self.ui.remove_indent(depth);
 
         Ok((n_dirs, n_files))
+    }
+
+    fn list_dir_matches(&self, dir: &Path) -> Result<Vec<PathBuf>> {
+        let mut paths = vec![];
+        for path in self.fs.list_dir(dir)? {
+            if self.matcher.is_match(&path) {
+                paths.push(path);
+            }
+        }
+        Ok(paths)
     }
 }
