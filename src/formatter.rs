@@ -1,22 +1,20 @@
 use std::collections::HashSet;
 
 use crate::entry::Entry;
-use crate::ui::UI;
 
-pub struct StdoutUI {
+// TODO(AD) Add Formatter trait and CLIFormatter impl
+pub struct Formatter {
     nested: HashSet<usize>,
 }
 
-impl StdoutUI {
-    pub fn new() -> StdoutUI {
-        StdoutUI {
+impl Formatter {
+    pub fn new() -> Formatter {
+        Formatter {
             nested: HashSet::new(),
         }
     }
-}
 
-impl UI for StdoutUI {
-    fn file(&self, entry: &Entry) {
+    pub fn file(&self, entry: &Entry) -> String {
         if entry.depth > 0 {
             let mut s = "".to_string();
             let indent = entry.depth - 1;
@@ -34,17 +32,21 @@ impl UI for StdoutUI {
             } else {
                 "├── "
             };
-            println!("{}{}{}", s, prefix, entry.file_name);
+            format!("{}{}{}", s, prefix, entry.file_name)
         } else {
-            println!("{}", entry.file_name);
+            format!("{}", entry.file_name)
         }
     }
 
-    fn add_indent(&mut self, depth: usize) {
+    pub fn summary(&self, n_dirs: usize, n_files: usize) -> String {
+        format!("\n{} directories, {} files", n_dirs, n_files)
+    }
+
+    pub fn add_indent(&mut self, depth: usize) {
         self.nested.insert(depth);
     }
 
-    fn remove_indent(&mut self, depth: usize) {
+    pub fn remove_indent(&mut self, depth: usize) {
         self.nested.remove(&depth);
     }
 }
