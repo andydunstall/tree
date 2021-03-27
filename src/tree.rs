@@ -47,13 +47,20 @@ where
                         self.ui.file(&entry);
                     }
 
-                    prev = Some(Entry {
-                        file_name: file_name.to_string(),
-                        depth: depth,
-                        is_last: false,
-                    });
                     if path.is_dir() {
+                        self.ui.file(&Entry {
+                            file_name: file_name.to_string(),
+                            depth: depth,
+                            is_last: false,
+                        });
+
                         self.walk_nested(&path, depth + 1)?;
+                    } else {
+                        prev = Some(Entry {
+                            file_name: file_name.to_string(),
+                            depth: depth,
+                            is_last: false,
+                        });
                     }
                 }
             }
