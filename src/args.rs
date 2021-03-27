@@ -14,9 +14,7 @@ impl Args {
             .version("0.1.0")
             .about("list contents of directories in a tree-like format")
             .arg(
-                Arg::with_name("dir")
-                    .short("d")
-                    .long("dir")
+                Arg::with_name("directory")
                     .help("directory to list")
                     .takes_value(true),
             )
@@ -34,7 +32,7 @@ impl Args {
     }
 
     fn dir(matches: &ArgMatches) -> String {
-        matches.value_of("dir").unwrap_or(".").to_string()
+        matches.value_of("directory").unwrap_or(".").to_string()
     }
 
     fn is_enabled(matches: &ArgMatches, key: &str) -> bool {
