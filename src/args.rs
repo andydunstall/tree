@@ -5,6 +5,7 @@ use crate::error::Result;
 #[derive(Clone, Debug)]
 pub struct Args {
     pub dir: String,
+    pub show_hidden: bool,
 }
 
 impl Args {
@@ -17,15 +18,29 @@ impl Args {
                     .short("d")
                     .long("dir")
                     .help("directory to list")
-                    .takes_value(true),
+                    .takes_value(true)
+            )
+            .arg(
+                Arg::with_name("all")
+                    .short("a")
+                    .long("all")
+                    .help("show hidden files")
             )
             .get_matches();
         Ok(Args {
             dir: Args::dir(&matches),
+            show_hidden: Args::is_enabled(&matches, "all"),
         })
     }
 
     fn dir(matches: &ArgMatches) -> String {
         matches.value_of("dir").unwrap_or(".").to_string()
+    }
+
+    fn is_enabled(matches: &ArgMatches, key: &str) -> bool {
+        match matches.occurrences_of(key) {
+            0 => false,
+            _ => true,
+        }
     }
 }
