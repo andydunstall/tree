@@ -1,8 +1,8 @@
 use std::path::Path;
 
 use tree::{
-    Args, DirectoriesOnlyRule, Formatter, HideHiddenRule, PriorityRule, Result, Rule, StdoutUI,
-    Tree, OSFS,
+    Args, DirectoriesOnlyRule, Formatter, Gitignore, HideHiddenRule, PriorityRule, Result, Rule,
+    StdoutUI, Tree, OSFS,
 };
 
 fn rule(args: &Args) -> impl Rule {
@@ -13,12 +13,12 @@ fn rule(args: &Args) -> impl Rule {
     if args.directories_only {
         rules.push(Box::new(DirectoriesOnlyRule::new()));
     }
-    /*
     if args.gitignore {
-        let gitignore = Gitignore::open()?;
-        rules.extend(gitignore.rules());
+        for gitignore in Gitignore::workspace(Path::new(&args.dir)) {
+            // Note order important (higher priority first).
+            rules.push(Box::new(gitignore.rule()));
+        }
     }
-    */
     PriorityRule::new(rules)
 }
 
