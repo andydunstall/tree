@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use crate::entry::Entry;
 use crate::error::Result;
 use crate::fs::FS;
-use crate::ruleset::Ruleset;
+use crate::rule::Rule;
 use crate::ui::UI;
 
 pub struct Tree<R, F, U> {
@@ -14,7 +14,7 @@ pub struct Tree<R, F, U> {
 
 impl<R, F, U> Tree<R, F, U>
 where
-    R: Ruleset,
+    R: Rule,
     F: FS,
     U: UI,
 {
@@ -85,7 +85,7 @@ where
     fn list_dir_matches(&self, dir: &Path) -> Result<Vec<PathBuf>> {
         let mut paths = vec![];
         for path in self.fs.list_dir(dir)? {
-            if self.matcher.is_ignored(&path) {
+            if !self.matcher.is_ignored(&path) {
                 paths.push(path);
             }
         }
