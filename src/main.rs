@@ -1,11 +1,11 @@
 use std::path::Path;
 
-use tree::{AllRuleset, Args, ConfigRuleset, Formatter, Result, StdoutUI, Tree, OSFS};
+use tree::{AnyRuleset, Args, ConfigRuleset, Formatter, Result, StdoutUI, Tree, OSFS};
 
 fn main() -> Result<()> {
     let args = Args::parse_cli()?;
 
-    let rs = AllRuleset::new(vec![Box::new(ConfigRuleset::new(
+    let rs = AnyRuleset::new(vec![Box::new(ConfigRuleset::new(
         args.show_hidden,
         args.directories_only,
     ))]);

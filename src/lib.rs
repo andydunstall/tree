@@ -15,6 +15,6 @@ pub use error::{Error, Result};
 pub use formatter::Formatter;
 pub use fs::FS;
 pub use os_fs::OSFS;
-pub use ruleset::{AllRuleset, ConfigRuleset, Ruleset};
+pub use ruleset::{AnyRuleset, ConfigRuleset, Ruleset};
 pub use stdout_ui::StdoutUI;
 pub use ui::UI;

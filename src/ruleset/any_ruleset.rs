@@ -3,17 +3,17 @@ use std::vec::Vec;
 
 pub use crate::ruleset::Ruleset;
 
-pub struct AllRuleset {
+pub struct AnyRuleset {
     rulesets: Vec<Box<dyn Ruleset>>,
 }
 
-impl AllRuleset {
-    pub fn new(rulesets: Vec<Box<dyn Ruleset>>) -> AllRuleset {
-        AllRuleset { rulesets: rulesets }
+impl AnyRuleset {
+    pub fn new(rulesets: Vec<Box<dyn Ruleset>>) -> AnyRuleset {
+        AnyRuleset { rulesets: rulesets }
     }
 }
 
-impl Ruleset for AllRuleset {
+impl Ruleset for AnyRuleset {
     fn is_ignored(&self, path: &Path) -> bool {
         for rs in &self.rulesets {
             if rs.is_ignored(path) {
