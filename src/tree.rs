@@ -3,21 +3,22 @@ use std::path::{Path, PathBuf};
 use crate::entry::Entry;
 use crate::error::Result;
 use crate::fs::FS;
-use crate::matcher::Matcher;
+use crate::ruleset::Ruleset;
 use crate::ui::UI;
 
-pub struct Tree<F, U> {
-    matcher: Matcher,
+pub struct Tree<R, F, U> {
+    matcher: R,
     fs: F,
     ui: U,
 }
 
-impl<F, U> Tree<F, U>
+impl<R, F, U> Tree<R, F, U>
 where
+    R: Ruleset,
     F: FS,
     U: UI,
 {
-    pub fn new(matcher: Matcher, fs: F, ui: U) -> Tree<F, U> {
+    pub fn new(matcher: R, fs: F, ui: U) -> Tree<R, F, U> {
         Tree {
             matcher: matcher,
             fs: fs,
@@ -84,7 +85,7 @@ where
     fn list_dir_matches(&self, dir: &Path) -> Result<Vec<PathBuf>> {
         let mut paths = vec![];
         for path in self.fs.list_dir(dir)? {
-            if self.matcher.is_match(&path) {
+            if self.matcher.is_ignored(&path) {
                 paths.push(path);
             }
         }

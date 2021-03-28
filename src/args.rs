@@ -7,6 +7,7 @@ pub struct Args {
     pub dir: String,
     pub show_hidden: bool,
     pub directories_only: bool,
+    pub gitignore: bool,
 }
 
 impl Args {
@@ -24,12 +25,18 @@ impl Args {
                     .short("d")
                     .help("List directories only"),
             )
+            .arg(
+                Arg::with_name("gitignore")
+                    .short("g")
+                    .help("Hide files listed in the gitignore"),
+            )
             .arg(Arg::with_name("all").short("a").help("Show hidden files"))
             .get_matches();
         Ok(Args {
             dir: Args::dir(&matches),
             show_hidden: Args::is_enabled(&matches, "all"),
             directories_only: Args::is_enabled(&matches, "directories"),
+            gitignore: Args::is_enabled(&matches, "gitignore"),
         })
     }
 
