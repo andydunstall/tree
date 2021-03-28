@@ -8,6 +8,7 @@ pub struct Args {
     pub show_hidden: bool,
     pub directories_only: bool,
     pub gitignore: bool,
+    pub treeignore: bool,
 }
 
 impl Args {
@@ -30,6 +31,11 @@ impl Args {
                     .short("g")
                     .help("Hide files listed in the gitignore"),
             )
+            .arg(
+                Arg::with_name("notreeignore")
+                    .short("c")
+                    .help("Disable `~/.treeignore`"),
+            )
             .arg(Arg::with_name("all").short("a").help("Show hidden files"))
             .get_matches();
         Ok(Args {
@@ -37,6 +43,7 @@ impl Args {
             show_hidden: Args::is_enabled(&matches, "all"),
             directories_only: Args::is_enabled(&matches, "directories"),
             gitignore: Args::is_enabled(&matches, "gitignore"),
+            treeignore: !Args::is_enabled(&matches, "notreeignore"),
         })
     }
 
