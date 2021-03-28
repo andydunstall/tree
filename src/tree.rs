@@ -35,7 +35,7 @@ where
             })
         );
         let (n_dirs, n_files) = self.walk_nested(dir, 1)?;
-        print!("{}", self.formatter.summary(n_dirs, n_files));
+        print!("\n{}", self.formatter.summary(n_dirs, n_files));
         Ok(())
     }
 
@@ -44,7 +44,7 @@ where
             return Ok((0, 0));
         }
 
-        self.formatter.add_indent(depth - 1);
+        self.formatter.add_dir(depth - 1);
 
         let mut n_dirs = 0;
         let mut n_files = 0;
@@ -55,7 +55,7 @@ where
                 if let Some(file_name) = file_name.to_str() {
                     if path.is_dir() {
                         if i == list.len() - 1 {
-                            self.formatter.remove_indent(depth - 1);
+                            self.formatter.remove_dir(depth - 1);
                         }
 
                         n_dirs += 1;
@@ -85,7 +85,7 @@ where
                 }
             }
         }
-        self.formatter.remove_indent(depth);
+        self.formatter.remove_dir(depth);
 
         Ok((n_dirs, n_files))
     }
