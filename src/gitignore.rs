@@ -3,18 +3,24 @@ use std::path::Path;
 use std::vec::Vec;
 
 pub use crate::error::Result;
-pub use crate::rule::{PriorityRule, Rule};
+pub use crate::rule::{PathRule, PriorityRule, Rule};
 
 const GITIGNORE: &str = ".gitignore";
 
 // See https://git-scm.com/docs/gitignore#_pattern_format.
 // Note order of returned priority rule important (deeper directories and lower
 // within file take priority).
-pub struct Gitignore {}
+pub struct Gitignore {
+    content: String,
+}
 
+// TODO(AD) Maybe GitignoreRule needed to handle matching paths relative to
+// the path of the gitignore
 impl Gitignore {
-    pub fn new(_gitignore: &str) -> Gitignore {
-        Gitignore {}
+    pub fn new(gitignore: &str) -> Gitignore {
+        Gitignore {
+            content: gitignore.to_string(),
+        }
     }
 
     pub fn workspace(dir: &Path) -> Vec<Gitignore> {
@@ -47,7 +53,19 @@ impl Gitignore {
     }
 
     pub fn rule(&self) -> impl Rule {
-        PriorityRule::new(vec![])
+        let mut rules: Vec<Box<dyn Rule>> = vec![];
+        for line in self.content.lines() {
+            let line = line.trim();
+            if line.is_empty() {
+                continue;
+            }
+            if line.starts_with("#") {
+                continue;
+            }
+
+            rules.push(Box::new(PathRule::new(Path::new(line))));
+        }
+        PriorityRule::new(rules)
     }
 
     fn is_git_workspace(dir: &Path) -> bool {
@@ -58,6 +76,34 @@ impl Gitignore {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_ignore_file() {
+        // TODO(AD)
+        let rule = Gitignore::new("myfile").rule();
+        assert!(rule.is_ignored(Path::new("myfile")));
+        // assert!(rule.is_ignored(Path::new("mydir/myfile")));
+        // assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
+
+        assert!(!rule.is_ignored(Path::new("notmyfile")));
+        // assert!(!rule.is_ignored(Path::new("notmydir/notmyfile")));
+    }
+
+    #[test]
+    fn test_ignore_comments() {
+        let content = r#"
+# commented
+
+
+#commented
+ignored
+  # commented
+"#;
+        let rule = Gitignore::new(content).rule();
+        assert!(rule.is_ignored(Path::new("ignored")));
+        assert!(!rule.is_ignored(Path::new("commented")));
+        assert!(!rule.is_ignored(Path::new("#commented")));
+    }
 
     #[test]
     fn test_empty() {
