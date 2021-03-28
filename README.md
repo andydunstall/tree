@@ -6,6 +6,12 @@ features to confgiure files to ignore and hopefully more extendible.
 
 ## Getting Started
 
+### Download
+  ```sh
+  wget https://github.com/dunstall/tree/releases/download/a.b.c/tree
+  mv tree /usr/local/bin
+  ```
+
 ### Installation
   ```sh
   git clone git@github.com:dunstall/tree.git && cd tree
