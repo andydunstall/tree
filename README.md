@@ -33,7 +33,8 @@ ignore this) in the same format as `.gitignore`,
 upto the workspace root),
   * `-I` option to ignore files using the same glob format as above.
 * v0.3.0:
-  * don't follow symlinks by default and add a `-l` option to follow.
+  * don't follow symlinks by default and add a `-l` option to follow,
+  * support listing multiple root directories not just one.
 
 ## Licence
 See `LICENSE` for more information.
