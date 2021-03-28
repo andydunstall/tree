@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use crate::rule::Rule;
 
+// TODO(AD) Support glob
 pub struct PathRule {
     path: PathBuf,
 }
@@ -16,8 +17,15 @@ impl PathRule {
 
 impl Rule for PathRule {
     fn is_ignored(&self, path: &Path) -> bool {
-        // TODO(AD)
-        self.path == path
+        if let Ok(lhs) = path.canonicalize() {
+            if let Ok(rhs) = self.path.canonicalize() {
+                lhs == rhs
+            } else {
+                false
+            }
+        } else {
+            false
+        }
     }
 
     fn is_override(&self, _path: &Path) -> bool {

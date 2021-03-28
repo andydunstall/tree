@@ -69,7 +69,11 @@ impl Gitignore {
                     rules.push(Box::new(OverrideRule::new(rule)));
                 }
             } else {
-                let rule = Box::new(PathRule::new(Path::new(line)));
+                let mut line = line.to_string();
+                if line.starts_with("/") {
+                    line.insert(0, '.');
+                }
+                let rule = Box::new(PathRule::new(Path::new(&line)));
                 rules.push(rule);
             }
         }
