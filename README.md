@@ -2,7 +2,7 @@
 A CLI tool to view your directory tree.
 
 This is based on [Linux tree](https://linux.die.net/man/1/tree) with added
-features and hopefully more extendible.
+features to confgiure files to ignore and hopefully more extendible.
 
 ## Getting Started
 
