@@ -3,6 +3,8 @@ use std::vec::Vec;
 
 pub use crate::ruleset::Ruleset;
 
+// AnyRuleset implements Ruleset where a file is ignored if any contained
+// rulesets ignore it.
 pub struct AnyRuleset {
     rulesets: Vec<Box<dyn Ruleset>>,
 }

@@ -1,9 +1,22 @@
 use std::path::Path;
 
-use tree::{AnyRuleset, Args, ConfigRuleset, Formatter, Result, StdoutUI, Tree, OSFS};
+use tree::{
+    AnyRuleset, Args, ConfigRuleset, Formatter, GitignoreRuleset, Result, Ruleset, StdoutUI, Tree,
+    OSFS,
+};
 
 fn main() -> Result<()> {
     let args = Args::parse_cli()?;
+
+    let mut rulesets: Vec<Box<dyn Ruleset>> = vec![Box::new(ConfigRuleset::new(
+        args.show_hidden,
+        args.directories_only,
+    ))];
+    if args.gitignore {
+        for rs in GitignoreRuleset::open(Path::new(&args.dir))? {
+            rulesets.push(Box::new(rs));
+        }
+    }
 
     let rs = AnyRuleset::new(vec![Box::new(ConfigRuleset::new(
         args.show_hidden,
