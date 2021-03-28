@@ -3,7 +3,7 @@ use std::path::Path;
 use std::vec::Vec;
 
 pub use crate::error::Result;
-pub use crate::rule::{PathRule, PriorityRule, Rule};
+pub use crate::rule::{PathRule, PriorityRule, Rule, OverrideRule};
 
 const GITIGNORE: &str = ".gitignore";
 
@@ -63,8 +63,18 @@ impl Gitignore {
                 continue;
             }
 
-            rules.push(Box::new(PathRule::new(Path::new(line))));
+            if line.starts_with("!") {
+                if let Some(line) = line.strip_prefix("!") {
+                    let rule = Box::new(PathRule::new(Path::new(line)));
+                    rules.push(Box::new(OverrideRule::new(rule)));
+                }
+            } else {
+                let rule = Box::new(PathRule::new(Path::new(line)));
+                rules.push(rule);
+            }
         }
+        // Reverse since the rules are in priority order from last to first.
+        rules.reverse();
         PriorityRule::new(rules)
     }
 
@@ -76,6 +86,20 @@ impl Gitignore {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_override_ignore() {
+        let content = r#"
+        myfile
+        !myfile
+        "#;
+
+        // TODO(AD)
+        let rule = Gitignore::new(content).rule();
+        assert!(!rule.is_ignored(Path::new("myfile")));
+        // assert!(rule.is_ignored(Path::new("mydir/myfile")));
+        // assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
+    }
 
     #[test]
     fn test_ignore_file() {
