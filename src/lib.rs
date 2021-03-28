@@ -1,18 +1,20 @@
 mod args;
-mod cli_formatter;
 mod entry;
 mod error;
 mod formatter;
 mod fs;
 mod matcher;
 mod os_fs;
+mod stdout_ui;
 mod tree;
+mod ui;
 
 pub use crate::tree::Tree;
 pub use args::Args;
-pub use cli_formatter::CLIFormatter;
 pub use error::{Error, Result};
 pub use formatter::Formatter;
 pub use fs::FS;
 pub use matcher::Matcher;
 pub use os_fs::OSFS;
+pub use stdout_ui::StdoutUI;
+pub use ui::UI;

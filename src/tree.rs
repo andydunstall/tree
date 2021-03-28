@@ -2,40 +2,37 @@ use std::path::{Path, PathBuf};
 
 use crate::entry::Entry;
 use crate::error::Result;
-use crate::formatter::Formatter;
 use crate::fs::FS;
 use crate::matcher::Matcher;
+use crate::ui::UI;
 
-pub struct Tree<F, M> {
+pub struct Tree<F, U> {
     matcher: Matcher,
     fs: F,
-    formatter: M,
+    ui: U,
 }
 
-impl<F, M> Tree<F, M>
+impl<F, U> Tree<F, U>
 where
     F: FS,
-    M: Formatter,
+    U: UI,
 {
-    pub fn new(matcher: Matcher, fs: F, formatter: M) -> Tree<F, M> {
+    pub fn new(matcher: Matcher, fs: F, ui: U) -> Tree<F, U> {
         Tree {
             matcher: matcher,
             fs: fs,
-            formatter: formatter,
+            ui: ui,
         }
     }
 
     pub fn walk(&mut self, dir: &Path) -> Result<()> {
-        print!(
-            "{}",
-            self.formatter.file(&Entry {
-                file_name: dir.to_str().unwrap().to_string(),
-                depth: 0,
-                is_last: false,
-            })
-        );
+        self.ui.file(&Entry {
+            file_name: dir.to_str().unwrap().to_string(),
+            depth: 0,
+            is_last: false,
+        });
         let (n_dirs, n_files) = self.walk_nested(dir, 1)?;
-        print!("\n{}", self.formatter.summary(n_dirs, n_files));
+        self.ui.summary(n_dirs, n_files);
         Ok(())
     }
 
@@ -44,7 +41,7 @@ where
             return Ok((0, 0));
         }
 
-        self.formatter.add_dir(depth - 1);
+        self.ui.add_dir(depth - 1);
 
         let mut n_dirs = 0;
         let mut n_files = 0;
@@ -55,37 +52,31 @@ where
                 if let Some(file_name) = file_name.to_str() {
                     if path.is_dir() {
                         if i == list.len() - 1 {
-                            self.formatter.remove_dir(depth - 1);
+                            self.ui.remove_dir(depth - 1);
                         }
 
                         n_dirs += 1;
-                        print!(
-                            "{}",
-                            self.formatter.file(&Entry {
-                                file_name: file_name.to_string(),
-                                depth: depth,
-                                is_last: i == list.len() - 1,
-                            })
-                        );
+                        self.ui.file(&Entry {
+                            file_name: file_name.to_string(),
+                            depth: depth,
+                            is_last: i == list.len() - 1,
+                        });
 
                         let (n_nested_dirs, n_nested_files) = self.walk_nested(&path, depth + 1)?;
                         n_dirs += n_nested_dirs;
                         n_files += n_nested_files;
                     } else {
                         n_files += 1;
-                        print!(
-                            "{}",
-                            self.formatter.file(&Entry {
-                                file_name: file_name.to_string(),
-                                depth: depth,
-                                is_last: i == list.len() - 1,
-                            })
-                        );
+                        self.ui.file(&Entry {
+                            file_name: file_name.to_string(),
+                            depth: depth,
+                            is_last: i == list.len() - 1,
+                        });
                     }
                 }
             }
         }
-        self.formatter.remove_dir(depth);
+        self.ui.remove_dir(depth);
 
         Ok((n_dirs, n_files))
     }
