@@ -8,8 +8,9 @@ features to confgiure files to ignore to avoid cluttering the output.
 
 ### Download
   ```sh
-  wget https://github.com/dunstall/tree/releases/download/a.b.c/tree
-  mv tree /usr/local/bin
+  wget https://github.com/dunstall/tree/releases/download/a.b.c/tree-variant
+  chmod +x tree-variant
+  mv tree-variant /usr/local/bin/tree
   ```
 
 ### Installation
