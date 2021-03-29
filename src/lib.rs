@@ -7,6 +7,7 @@ mod ignore_config;
 mod os_fs;
 mod rule;
 mod stdout_ui;
+mod summary;
 mod tree;
 mod treeignore;
 mod ui;

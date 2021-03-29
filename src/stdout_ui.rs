@@ -1,4 +1,5 @@
 use crate::formatter::Formatter;
+use crate::summary::Summary;
 use crate::UI;
 
 pub struct StdoutUI {
@@ -18,8 +19,11 @@ impl UI for StdoutUI {
         print!("{}", self.formatter.file(file_name, depth, is_last));
     }
 
-    fn summary(&self, n_dirs: usize, n_files: usize) {
-        print!("\n{}", self.formatter.summary(n_dirs, n_files));
+    fn summary(&self, summary: &Summary) {
+        print!(
+            "\n{}",
+            self.formatter.summary(summary.n_dirs, summary.n_files)
+        );
     }
 
     fn add_dir(&mut self, depth: usize) {
