@@ -18,7 +18,8 @@ impl PathRule {
 impl Rule for PathRule {
     fn is_ignored(&self, path: &Path) -> bool {
         // TODO(AD) Remove canonicalize (requires local filesystem making
-        // unittest impossible - using glob should help)
+        // unittest impossible - using glob should help).
+        // TODO(AD) Handle different nested levels.
         if let Ok(lhs) = path.canonicalize() {
             if let Ok(rhs) = self.path.canonicalize() {
                 lhs == rhs
