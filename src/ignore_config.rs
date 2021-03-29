@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::vec::Vec;
 
 pub use crate::error::Result;
@@ -9,19 +9,18 @@ pub use crate::rule::{OverrideRule, PathRule, PriorityRule, Rule};
 // within file take priority).
 pub struct IgnoreConfig {
     content: String,
-    root: PathBuf,
 }
 
 // TODO(AD) Maybe IgnoreConfigRule needed to handle matching paths relative to
 // the path of the gitignore
 impl IgnoreConfig {
-    pub fn new(content: &str, root: &Path) -> IgnoreConfig {
+    pub fn new(content: &str, _root: &Path) -> IgnoreConfig {
         IgnoreConfig {
             content: content.to_string(),
-            root: root.to_path_buf(),
         }
     }
 
+    // TODO(AD) Rewrite with TDD.
     pub fn rule(&self) -> impl Rule {
         let mut rules: Vec<Box<dyn Rule>> = vec![];
         for line in self.content.lines() {
@@ -40,14 +39,13 @@ impl IgnoreConfig {
                 }
             } else {
                 let path = if Path::new(line).is_absolute() {
-                    let path = Path::new(line);
-                    if let Ok(path) = path.strip_prefix("/") {
-                        self.root.join(path)
+                    if let Ok(rel) = Path::new(line).strip_prefix("/") {
+                        rel
                     } else {
-                        path.to_path_buf()
+                        Path::new(line)
                     }
                 } else {
-                    Path::new(line).to_path_buf()
+                    Path::new(line)
                 };
 
                 let rule = Box::new(PathRule::new(&path));
