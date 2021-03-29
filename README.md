@@ -49,15 +49,10 @@ relative to the `.treeignore` file (unlike in `.gitignore` where it is relative
 to the `.gitignore` file itself.
 
 ## Roadmap
-* v0.2.0:
-  * ignore files listed in `~/.treeignore` by default (with a `-c` option to
-ignore this) in the same format as `.gitignore`,
-  * `-g` option to ignore files listed `.gitignore` (including all excludes
-upto the workspace root),
-  * `-I` option to ignore files using the same glob format as above.
 * v0.3.0:
   * don't follow symlinks by default and add a `-l` option to follow,
   * support listing multiple root directories not just one.
+  * support ignored glob
 
 ### Know Issues
 * Glob ignore not supported,
