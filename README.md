@@ -25,6 +25,23 @@ features to confgiure files to ignore and hopefully more extendible.
   cargo test
   ```
 
+### Configuration
+The purpose of this `tree` implementation is to allow easily hiding
+directories and files, such as `venv/` and `__pycache__` in Python, `target` in
+Rust. There are 3 ways to support this:
+* `-I` CLI option to specify a path to ignore,
+* '-g' option to ignore files listed in the workspaces `.gitignore`,
+* ignores files listed in `~/.treeignore` by default, which is the same format
+as `.gitignore` (with a few exceptions listed below). This can be disabled
+using the `-c` option in the CLI.
+
+### .treeignore
+`~/.treeignore` is in the same format as `.gitignore` (see [format](https://git-scm.com/docs/gitignore#_pattern_format)),
+with exceptions:
+* Patterns with a leading slash `/` will be seen as absolute paths rather than
+relative to the `.treeignore` file (unlike in `.gitignore` where it is relative
+to the `.gitignore` file itself.
+
 ## Roadmap
 * v0.2.0:
   * ignore files listed in `~/.treeignore` by default (with a `-c` option to
