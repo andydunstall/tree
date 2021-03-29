@@ -59,5 +59,9 @@ upto the workspace root),
   * don't follow symlinks by default and add a `-l` option to follow,
   * support listing multiple root directories not just one.
 
+### Know Issues
+* Glob ignore not supported,
+* Absolute ignore paths are taken as relative (ie removes leading `/`).
+
 ## Licence
 See `LICENSE` for more information.
