@@ -15,6 +15,10 @@ impl OSFS {
 
 impl FS for OSFS {
     fn list_dir(&self, dir: &Path) -> Result<Vec<PathBuf>> {
+        if !dir.is_dir() {
+            return Ok(vec![]);
+        }
+
         let mut paths = vec![];
         for entry in fs::read_dir(dir)? {
             match entry {

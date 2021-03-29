@@ -40,10 +40,6 @@ where
             n_files: 0,
         };
 
-        if !dir.is_dir() {
-            return Ok(summary);
-        }
-
         self.ui.add_dir(depth - 1);
 
         let list = self.list_dir_matches(dir)?;
@@ -82,5 +78,54 @@ where
             }
         }
         Ok(paths)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use mockall::predicate;
+
+    use crate::fs::MockFS;
+    use crate::rule::MockRule;
+    use crate::ui::MockUI;
+
+    #[test]
+    fn dir_does_not_exist() {
+        let rule = MockRule::new();
+        let mut fs = MockFS::new();
+        fs.expect_list_dir()
+            .with(predicate::eq(Path::new("mydir")))
+            .times(1)
+            .returning(|_| Ok(vec![]));
+
+        let mut ui = MockUI::new();
+        ui.expect_file()
+            .with(
+                predicate::eq("mydir".to_string()),
+                predicate::eq(0),
+                predicate::eq(false),
+            )
+            .times(1)
+            .returning(|_, _, _| ());
+        ui.expect_add_dir()
+            .with(predicate::eq(0))
+            .times(1)
+            .returning(|_| ());
+        ui.expect_remove_dir()
+            .with(predicate::eq(1))
+            .times(1)
+            .returning(|_| ());
+        ui.expect_summary()
+            .with(predicate::eq(&Summary {
+                n_dirs: 0,
+                n_files: 0,
+            }))
+            .times(1)
+            .returning(|_| ());
+
+        let mut tree = Tree::new(rule, fs, ui);
+        tree.walk(Path::new("mydir")).unwrap();
     }
 }

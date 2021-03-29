@@ -1,5 +1,8 @@
 use std::path::Path;
 
+use mockall::automock;
+
+#[automock]
 pub trait Rule {
     // Returns true if the given path should be allowed, false otherwise.
     fn is_ignored(&self, path: &Path) -> bool;

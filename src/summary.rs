@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Summary {
     pub n_dirs: usize,
     pub n_files: usize,
