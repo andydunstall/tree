@@ -20,7 +20,7 @@ pub use fs::FS;
 pub use gitignore::open_gitignores;
 pub use ignore_config::IgnoreConfig;
 pub use os_fs::OSFS;
-pub use rule::{DirectoriesOnlyRule, HideHiddenRule, PriorityRule, Rule};
+pub use rule::{DirectoriesOnlyRule, HideHiddenRule, PathRule, PriorityRule, Rule};
 pub use stdout_ui::StdoutUI;
 pub use treeignore::open_treeignore;
 pub use ui::UI;

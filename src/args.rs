@@ -1,3 +1,5 @@
+use std::vec::Vec;
+
 use clap::{App, Arg, ArgMatches};
 
 use crate::error::Result;
@@ -9,6 +11,7 @@ pub struct Args {
     pub directories_only: bool,
     pub gitignore: bool,
     pub treeignore: bool,
+    pub ignore: Vec<String>,
 }
 
 impl Args {
@@ -29,6 +32,7 @@ impl Args {
             .arg(
                 Arg::with_name("gitignore")
                     .short("g")
+                    .long("gitignore")
                     .help("Hide files listed in the gitignore"),
             )
             .arg(
@@ -37,6 +41,14 @@ impl Args {
                     .help("Disable `~/.treeignore`"),
             )
             .arg(Arg::with_name("all").short("a").help("Show hidden files"))
+            .arg(
+                Arg::with_name("ignore")
+                    .short("I")
+                    .long("ignore")
+                    .multiple(true)
+                    .help("Path to ignore")
+                    .takes_value(true),
+            )
             .get_matches();
         Ok(Args {
             dir: Args::dir(&matches),
@@ -44,11 +56,21 @@ impl Args {
             directories_only: Args::is_enabled(&matches, "directories"),
             gitignore: Args::is_enabled(&matches, "gitignore"),
             treeignore: !Args::is_enabled(&matches, "notreeignore"),
+            ignore: Args::ignore(&matches),
         })
     }
 
     fn dir(matches: &ArgMatches) -> String {
         matches.value_of("directory").unwrap_or(".").to_string()
+    }
+
+    fn ignore(matches: &ArgMatches) -> Vec<String> {
+        if let Some(ignore) = matches.values_of("ignore") {
+            let ignore: Vec<String> = ignore.map(|s| s.to_string()).collect();
+            ignore
+        } else {
+            vec![]
+        }
     }
 
     fn is_enabled(matches: &ArgMatches, key: &str) -> bool {

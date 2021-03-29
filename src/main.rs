@@ -2,7 +2,7 @@ use std::path::Path;
 
 use tree::{
     open_gitignores, open_treeignore, Args, DirectoriesOnlyRule, Formatter, HideHiddenRule,
-    PriorityRule, Result, Rule, StdoutUI, Tree, OSFS,
+    PathRule, PriorityRule, Result, Rule, StdoutUI, Tree, OSFS,
 };
 
 fn rule(args: &Args) -> impl Rule {
@@ -12,6 +12,9 @@ fn rule(args: &Args) -> impl Rule {
     }
     if args.directories_only {
         rules.push(Box::new(DirectoriesOnlyRule::new()));
+    }
+    for ignore in &args.ignore {
+        rules.push(Box::new(PathRule::new(Path::new(ignore))));
     }
     if args.treeignore {
         if let Some(treeignore) = open_treeignore() {
