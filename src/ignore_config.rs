@@ -40,7 +40,12 @@ impl IgnoreConfig {
                 }
             } else {
                 let path = if Path::new(line).is_absolute() {
-                    self.root.join(Path::new(line))
+                    let path = Path::new(line);
+                    if let Ok(path) = path.strip_prefix("/") {
+                        self.root.join(path)
+                    } else {
+                        path.to_path_buf()
+                    }
                 } else {
                     Path::new(line).to_path_buf()
                 };
