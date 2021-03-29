@@ -15,7 +15,7 @@ pub fn open_gitignores(dir: &Path) -> Vec<IgnoreConfig> {
         loop {
             if path.join(GITIGNORE).is_file() {
                 if let Ok(gitignore) = fs::read_to_string(path.join(GITIGNORE)) {
-                    rulesets.push(IgnoreConfig::new(&gitignore));
+                    rulesets.push(IgnoreConfig::new(&gitignore, &path));
                 }
             }
 

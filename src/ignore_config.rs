@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::vec::Vec;
 
 pub use crate::error::Result;
@@ -9,14 +9,16 @@ pub use crate::rule::{OverrideRule, PathRule, PriorityRule, Rule};
 // within file take priority).
 pub struct IgnoreConfig {
     content: String,
+    root: PathBuf,
 }
 
 // TODO(AD) Maybe IgnoreConfigRule needed to handle matching paths relative to
 // the path of the gitignore
 impl IgnoreConfig {
-    pub fn new(gitignore: &str) -> IgnoreConfig {
+    pub fn new(content: &str, root: &Path) -> IgnoreConfig {
         IgnoreConfig {
-            content: gitignore.to_string(),
+            content: content.to_string(),
+            root: root.to_path_buf(),
         }
     }
 
@@ -37,11 +39,13 @@ impl IgnoreConfig {
                     rules.push(Box::new(OverrideRule::new(rule)));
                 }
             } else {
-                let mut line = line.to_string();
-                if line.starts_with("/") {
-                    line.insert(0, '.');
-                }
-                let rule = Box::new(PathRule::new(Path::new(&line)));
+                let path = if Path::new(line).is_absolute() {
+                    self.root.join(Path::new(line))
+                } else {
+                    Path::new(line).to_path_buf()
+                };
+
+                let rule = Box::new(PathRule::new(&path));
                 rules.push(rule);
             }
         }
@@ -55,6 +59,8 @@ impl IgnoreConfig {
 mod tests {
     use super::*;
 
+    // TODO(AD) Test absolute path / taken relative to root.
+
     #[test]
     fn test_override_ignore() {
         let content = r#"
@@ -63,7 +69,7 @@ mod tests {
         "#;
 
         // TODO(AD)
-        let rule = IgnoreConfig::new(content).rule();
+        let rule = IgnoreConfig::new(content, Path::new("")).rule();
         assert!(!rule.is_ignored(Path::new("myfile")));
         // assert!(rule.is_ignored(Path::new("mydir/myfile")));
         // assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
@@ -72,7 +78,7 @@ mod tests {
     #[test]
     fn test_ignore_file() {
         // TODO(AD)
-        let rule = IgnoreConfig::new("myfile").rule();
+        let rule = IgnoreConfig::new("myfile", Path::new("")).rule();
         assert!(rule.is_ignored(Path::new("myfile")));
         // assert!(rule.is_ignored(Path::new("mydir/myfile")));
         // assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
@@ -91,7 +97,7 @@ mod tests {
 ignored
   # commented
 "#;
-        let rule = IgnoreConfig::new(content).rule();
+        let rule = IgnoreConfig::new(content, Path::new("")).rule();
         assert!(rule.is_ignored(Path::new("ignored")));
         assert!(!rule.is_ignored(Path::new("commented")));
         assert!(!rule.is_ignored(Path::new("#commented")));
@@ -99,7 +105,7 @@ ignored
 
     #[test]
     fn test_empty() {
-        let rule = IgnoreConfig::new("").rule();
+        let rule = IgnoreConfig::new("", Path::new("")).rule();
         assert!(!rule.is_ignored(Path::new("myfile")));
     }
 }
