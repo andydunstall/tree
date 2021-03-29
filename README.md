@@ -1,8 +1,8 @@
 # tree
 A CLI tool to view your directory tree.
 
-This is based on [Linux tree](https://linux.die.net/man/1/tree) with added
-features to confgiure files to ignore and hopefully more extendible.
+This is based on UNIX [tree](https://linux.die.net/man/1/tree) with added
+features to confgiure files to ignore to avoid cluttering the output.
 
 ## Getting Started
 
