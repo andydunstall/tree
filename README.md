@@ -26,14 +26,20 @@ features to confgiure files to ignore and hopefully more extendible.
   ```
 
 ### Configuration
-The purpose of this `tree` implementation is to allow easily hiding
-directories and files, such as `venv/` and `__pycache__` in Python, `target` in
-Rust. There are 3 ways to support this:
+The aim of this `tree` implementation is to support hiding directories and
+files easily which would otherwise clutter the output, such as `venv/` and
+`__pycache__` in Python, `target` in Rust. There are 3 supported ways to
+hide files and directories:
 * `-I` CLI option to specify a path to ignore,
 * '-g' option to ignore files listed in the workspaces `.gitignore`,
 * ignores files listed in `~/.treeignore` by default, which is the same format
 as `.gitignore` (with a few exceptions listed below). This can be disabled
 using the `-c` option in the CLI.
+
+Note files beginning with `.` are hidden by default (which can be disabled
+with `-a`).
+
+See `tree --help` for the full CLI.
 
 ### .treeignore
 `~/.treeignore` is in the same format as `.gitignore` (see [format](https://git-scm.com/docs/gitignore#_pattern_format)),
