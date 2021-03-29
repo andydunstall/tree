@@ -1,4 +1,3 @@
-use crate::entry::Entry;
 use crate::formatter::Formatter;
 use crate::UI;
 
@@ -15,8 +14,8 @@ impl StdoutUI {
 }
 
 impl UI for StdoutUI {
-    fn file(&self, entry: &Entry) {
-        print!("{}", self.formatter.file(entry));
+    fn file(&self, file_name: String, depth: usize, is_last: bool) {
+        print!("{}", self.formatter.file(file_name, depth, is_last));
     }
 
     fn summary(&self, n_dirs: usize, n_files: usize) {

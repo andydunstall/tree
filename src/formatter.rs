@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use crate::entry::Entry;
-
 pub struct Formatter {
     dirs: HashSet<usize>,
 }
@@ -13,11 +11,11 @@ impl Formatter {
         }
     }
 
-    pub fn file(&self, entry: &Entry) -> String {
-        if entry.depth > 0 {
-            self.file_nested(entry)
+    pub fn file(&self, file_name: String, depth: usize, is_last: bool) -> String {
+        if depth > 0 {
+            self.file_nested(file_name, depth, is_last)
         } else {
-            format!("{}\n", entry.file_name)
+            format!("{}\n", file_name)
         }
     }
 
@@ -33,12 +31,12 @@ impl Formatter {
         self.dirs.remove(&depth);
     }
 
-    fn file_nested(&self, entry: &Entry) -> String {
+    fn file_nested(&self, file_name: String, depth: usize, is_last: bool) -> String {
         format!(
             "{}{}{}\n",
-            self.indent(entry.depth),
-            self.prefix(entry.is_last),
-            entry.file_name
+            self.indent(depth),
+            self.prefix(is_last),
+            file_name
         )
     }
 
@@ -72,62 +70,38 @@ mod tests {
     fn test_nested_dir() {
         let mut fmt = Formatter::new();
 
-        let out = fmt.file(&Entry {
-            file_name: "myfile.txt".to_string(),
-            depth: 2,
-            is_last: true,
-        });
+        let out = fmt.file("myfile.txt".to_string(), 2, true);
         assert_eq!(out, "    └── myfile.txt\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file(&Entry {
-            file_name: "myfile.txt".to_string(),
-            depth: 2,
-            is_last: true,
-        });
+        let out = fmt.file("myfile.txt".to_string(), 2, true);
         assert_eq!(out, "│   └── myfile.txt\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file(&Entry {
-            file_name: "myfile.txt".to_string(),
-            depth: 2,
-            is_last: true,
-        });
+        let out = fmt.file("myfile.txt".to_string(), 2, true);
         assert_eq!(out, "    └── myfile.txt\n");
     }
 
     #[test]
     fn test_depth_1_last() {
         let fmt = Formatter::new();
-        let out = fmt.file(&Entry {
-            file_name: "myfile.txt".to_string(),
-            depth: 1,
-            is_last: true,
-        });
+        let out = fmt.file("myfile.txt".to_string(), 1, true);
         assert_eq!(out, "└── myfile.txt\n");
     }
 
     #[test]
     fn test_depth_1_not_last() {
         let fmt = Formatter::new();
-        let out = fmt.file(&Entry {
-            file_name: "myfile.txt".to_string(),
-            depth: 1,
-            is_last: false,
-        });
+        let out = fmt.file("myfile.txt".to_string(), 1, false);
         assert_eq!(out, "├── myfile.txt\n");
     }
 
     #[test]
     fn test_top_level_file() {
         let fmt = Formatter::new();
-        let out = fmt.file(&Entry {
-            file_name: "myfile.txt".to_string(),
-            depth: 0,
-            is_last: true,
-        });
+        let out = fmt.file("myfile.txt".to_string(), 0, true);
         assert_eq!(out, "myfile.txt\n");
     }
 

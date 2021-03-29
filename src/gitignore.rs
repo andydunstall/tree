@@ -8,9 +8,14 @@ pub use crate::rule::{OverrideRule, PathRule, PriorityRule, Rule};
 
 const GITIGNORE: &str = ".gitignore";
 
+// Returns the ignore configuration of all `.gitignore`s upto the repository
+// root (directory containing `.git/`) or an empty vector if not a git
+// repository.
+//
+// Note the order is important as deeper gitignores can override higher level,
+// so returned in order from deepest to top.
 pub fn open_gitignores(dir: &Path) -> Vec<IgnoreConfig> {
     let mut rulesets = vec![];
-
     if let Ok(mut path) = fs::canonicalize(dir) {
         loop {
             if path.join(GITIGNORE).is_file() {
@@ -19,17 +24,18 @@ pub fn open_gitignores(dir: &Path) -> Vec<IgnoreConfig> {
                 }
             }
 
-            // Once reached the top of the git workspace return all the
+            // Once reached the top of the git repository return all the
             // gitignores.
-            if is_git_workspace(&path) {
+            if is_git_repository(&path) {
                 return rulesets;
             }
 
-            // If no parent exists can return any gitignores found so far.
             if let Some(p) = path.parent() {
                 path = p.to_path_buf();
             } else {
-                return rulesets;
+                // If no parent exists (ie reached root without finding a git
+                // repository) then return nothing.
+                return vec![];
             }
         }
     } else {
@@ -37,6 +43,6 @@ pub fn open_gitignores(dir: &Path) -> Vec<IgnoreConfig> {
     }
 }
 
-fn is_git_workspace(dir: &Path) -> bool {
+fn is_git_repository(dir: &Path) -> bool {
     dir.join(".git").is_dir()
 }

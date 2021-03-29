@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 
-use crate::entry::Entry;
 use crate::error::Result;
 use crate::fs::FS;
 use crate::rule::Rule;
@@ -27,11 +26,7 @@ where
     }
 
     pub fn walk(&mut self, dir: &Path) -> Result<()> {
-        self.ui.file(&Entry {
-            file_name: dir.to_str().unwrap().to_string(),
-            depth: 0,
-            is_last: false,
-        });
+        self.ui.file(dir.to_str().unwrap().to_string(), 0, false);
         let (n_dirs, n_files) = self.walk_nested(dir, 1)?;
         self.ui.summary(n_dirs, n_files);
         Ok(())
@@ -57,22 +52,16 @@ where
                         }
 
                         n_dirs += 1;
-                        self.ui.file(&Entry {
-                            file_name: file_name.to_string(),
-                            depth: depth,
-                            is_last: i == list.len() - 1,
-                        });
+                        self.ui
+                            .file(file_name.to_string(), depth, i == list.len() - 1);
 
                         let (n_nested_dirs, n_nested_files) = self.walk_nested(&path, depth + 1)?;
                         n_dirs += n_nested_dirs;
                         n_files += n_nested_files;
                     } else {
                         n_files += 1;
-                        self.ui.file(&Entry {
-                            file_name: file_name.to_string(),
-                            depth: depth,
-                            is_last: i == list.len() - 1,
-                        });
+                        self.ui
+                            .file(file_name.to_string(), depth, i == list.len() - 1);
                     }
                 }
             }
