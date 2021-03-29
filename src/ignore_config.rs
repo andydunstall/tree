@@ -7,12 +7,11 @@ pub use crate::rule::{OverrideRule, PathRule, PriorityRule, Rule};
 // See https://git-scm.com/docs/gitignore#_pattern_format.
 // Note order of returned priority rule important (deeper directories and lower
 // within file take priority).
+// TODO(AD) Add gitignore patterns.
 pub struct IgnoreConfig {
     content: String,
 }
 
-// TODO(AD) Maybe IgnoreConfigRule needed to handle matching paths relative to
-// the path of the gitignore
 impl IgnoreConfig {
     pub fn new(content: &str, _root: &Path) -> IgnoreConfig {
         IgnoreConfig {
@@ -20,41 +19,53 @@ impl IgnoreConfig {
         }
     }
 
-    // TODO(AD) Rewrite with TDD.
     pub fn rule(&self) -> impl Rule {
         let mut rules: Vec<Box<dyn Rule>> = vec![];
         for line in self.content.lines() {
-            let line = line.trim();
-            if line.is_empty() {
-                continue;
-            }
-            if line.starts_with("#") {
-                continue;
-            }
-
-            if line.starts_with("!") {
-                if let Some(line) = line.strip_prefix("!") {
-                    let rule = Box::new(PathRule::new(Path::new(line)));
-                    rules.push(Box::new(OverrideRule::new(rule)));
-                }
-            } else {
-                let path = if Path::new(line).is_absolute() {
-                    if let Ok(rel) = Path::new(line).strip_prefix("/") {
-                        rel
-                    } else {
-                        Path::new(line)
-                    }
-                } else {
-                    Path::new(line)
-                };
-
-                let rule = Box::new(PathRule::new(&path));
+            if let Some(rule) = IgnoreConfig::parse_line(line) {
                 rules.push(rule);
             }
         }
+
         // Reverse since the rules are in priority order from last to first.
         rules.reverse();
         PriorityRule::new(rules)
+    }
+
+    fn parse_line(line: &str) -> Option<Box<dyn Rule>> {
+        let line = line.trim();
+        if line.is_empty() {
+            return None;
+        }
+        if line.starts_with("#") {
+            return None;
+        }
+
+        if line.starts_with("!") {
+            if let Some(line) = line.strip_prefix("!") {
+                if let Some(rule) = IgnoreConfig::parse_line(line) {
+                    return Some(Box::new(OverrideRule::new(rule)));
+                }
+            }
+        } else {
+            return IgnoreConfig::parse_path_rule(line);
+        }
+
+        return None;
+    }
+
+    fn parse_path_rule(line: &str) -> Option<Box<dyn Rule>> {
+        let path = if Path::new(line).is_absolute() {
+            if let Ok(rel) = Path::new(line).strip_prefix("/") {
+                rel
+            } else {
+                Path::new(line)
+            }
+        } else {
+            Path::new(line)
+        };
+
+        return Some(Box::new(PathRule::new(&path)));
     }
 }
 
@@ -62,7 +73,17 @@ impl IgnoreConfig {
 mod tests {
     use super::*;
 
-    // TODO(AD) Test absolute path / taken relative to root.
+    #[test]
+    fn test_absolute() {
+        let content = r#"
+        /myfile
+        "#;
+
+        let rule = IgnoreConfig::new(content, Path::new("")).rule();
+        assert!(rule.is_ignored(Path::new("myfile")));
+        assert!(rule.is_ignored(Path::new("mydir/myfile")));
+        assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
+    }
 
     #[test]
     fn test_override_ignore() {
@@ -71,23 +92,20 @@ mod tests {
         !myfile
         "#;
 
-        // TODO(AD)
         let rule = IgnoreConfig::new(content, Path::new("")).rule();
         assert!(!rule.is_ignored(Path::new("myfile")));
-        // assert!(rule.is_ignored(Path::new("mydir/myfile")));
-        // assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
+        assert!(!rule.is_ignored(Path::new("mydir/myfile")));
+        assert!(!rule.is_ignored(Path::new("myfile/myotherfile")));
     }
 
     #[test]
     fn test_ignore_file() {
-        // TODO(AD)
         let rule = IgnoreConfig::new("myfile", Path::new("")).rule();
         assert!(rule.is_ignored(Path::new("myfile")));
-        // assert!(rule.is_ignored(Path::new("mydir/myfile")));
-        // assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
-
+        assert!(rule.is_ignored(Path::new("mydir/myfile")));
+        assert!(rule.is_ignored(Path::new("myfile/myotherfile")));
         assert!(!rule.is_ignored(Path::new("notmyfile")));
-        // assert!(!rule.is_ignored(Path::new("notmydir/notmyfile")));
+        assert!(!rule.is_ignored(Path::new("notmydir/notmyfile")));
     }
 
     #[test]
