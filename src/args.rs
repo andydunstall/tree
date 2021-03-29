@@ -9,9 +9,9 @@ pub struct Args {
     pub dir: String,
     pub show_hidden: bool,
     pub directories_only: bool,
+    pub ignore: Vec<String>,
     pub gitignore: bool,
     pub treeignore: bool,
-    pub ignore: Vec<String>,
 }
 
 impl Args {
@@ -24,22 +24,6 @@ impl Args {
                     .help("Directory to list")
                     .takes_value(true),
             )
-            .arg(
-                Arg::with_name("directories")
-                    .short("d")
-                    .help("List directories only"),
-            )
-            .arg(
-                Arg::with_name("gitignore")
-                    .short("g")
-                    .long("gitignore")
-                    .help("Hide files listed in the gitignore"),
-            )
-            .arg(
-                Arg::with_name("notreeignore")
-                    .short("c")
-                    .help("Disable `~/.treeignore`"),
-            )
             .arg(Arg::with_name("all").short("a").help("Show hidden files"))
             .arg(
                 Arg::with_name("ignore")
@@ -49,14 +33,30 @@ impl Args {
                     .help("Path to ignore")
                     .takes_value(true),
             )
+            .arg(
+                Arg::with_name("directories")
+                    .short("d")
+                    .help("List directories only"),
+            )
+            .arg(
+                Arg::with_name("gitignore")
+                    .short("g")
+                    .long("gitignore")
+                    .help("Hide files listed in the workspace gitignores"),
+            )
+            .arg(
+                Arg::with_name("disabletreeignore")
+                    .short("c")
+                    .help("Disable `~/.treeignore`"),
+            )
             .get_matches();
         Ok(Args {
             dir: Args::dir(&matches),
             show_hidden: Args::is_enabled(&matches, "all"),
             directories_only: Args::is_enabled(&matches, "directories"),
-            gitignore: Args::is_enabled(&matches, "gitignore"),
-            treeignore: !Args::is_enabled(&matches, "notreeignore"),
             ignore: Args::ignore(&matches),
+            gitignore: Args::is_enabled(&matches, "gitignore"),
+            treeignore: !Args::is_enabled(&matches, "disabletreeignore"),
         })
     }
 
