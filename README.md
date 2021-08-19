@@ -1,8 +1,9 @@
 # tree
 A CLI tool to view your directory tree.
 
-This is based on UNIX [tree](https://linux.die.net/man/1/tree) with added
-features to confgiure files to ignore to avoid cluttering the output.
+This is a simplified simplementation of UNIX [tree](https://linux.die.net/man/1/tree) with added
+support for hiding files listed in the current spaces `.gitignore` (using the `-g` flag). Such
+as its often frustrating to get all of `venv/` in Python or `target/` in Rust.
 
 ## Getting Started
 
