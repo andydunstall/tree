@@ -51,14 +51,8 @@ relative to the `.treeignore` file (unlike in `.gitignore` where it is relative
 to the `.gitignore` file itself.
 
 ## Roadmap
-* v0.3.0:
-  * don't follow symlinks by default and add a `-l` option to follow,
-  * support listing multiple root directories not just one.
-  * support ignored glob
-
-### Know Issues
-* Glob ignore not supported,
-* Absolute ignore paths are taken as relative (ie removes leading `/`).
+* Glob support
+* Add `-l` option to output long format similer to `ls -l`, such as file owner, permissions and size
 
 ## Licence
 See `LICENSE` for more information.
