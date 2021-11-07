@@ -33,4 +33,8 @@ impl FS for OSFS {
         paths.sort();
         Ok(paths)
     }
+
+    fn file_size(&self, path: &Path) -> Result<u64> {
+        Ok(fs::metadata(path)?.len())
+    }
 }

@@ -2,20 +2,30 @@ use std::collections::HashSet;
 
 pub struct Formatter {
     dirs: HashSet<usize>,
+    long_format: bool,
 }
 
 impl Formatter {
-    pub fn new() -> Formatter {
+    // TODO param here for long_format: bool
+    pub fn new(long_format: bool) -> Formatter {
         Formatter {
             dirs: HashSet::new(),
+            long_format: long_format,
         }
     }
 
-    pub fn file(&self, file_name: String, depth: usize, is_last: bool) -> String {
+    pub fn file(
+        &self,
+        file_name: String,
+        file_size: u64,
+        depth: usize,
+        is_last: bool,
+        is_dir: bool,
+    ) -> String {
         if depth > 0 {
-            self.file_nested(file_name, depth, is_last)
+            self.file_nested(file_name, file_size, depth, is_last, is_dir)
         } else {
-            format!("{}\n", file_name)
+            format!("{}{}\n", file_name, self.long_format(is_dir, file_size))
         }
     }
 
@@ -31,12 +41,20 @@ impl Formatter {
         self.dirs.remove(&depth);
     }
 
-    fn file_nested(&self, file_name: String, depth: usize, is_last: bool) -> String {
+    fn file_nested(
+        &self,
+        file_name: String,
+        file_size: u64,
+        depth: usize,
+        is_last: bool,
+        is_dir: bool,
+    ) -> String {
         format!(
-            "{}{}{}\n",
+            "{}{}{}{}\n",
             self.indent(depth),
             self.prefix(is_last),
-            file_name
+            file_name,
+            self.long_format(is_dir, file_size),
         )
     }
 
@@ -60,6 +78,14 @@ impl Formatter {
         }
         s
     }
+
+    fn long_format(&self, is_dir: bool, size: u64) -> String {
+        if self.long_format && !is_dir {
+            format!(" ({}B)", size)
+        } else {
+            "".to_string()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -68,46 +94,64 @@ mod tests {
 
     #[test]
     fn test_nested_dir() {
-        let mut fmt = Formatter::new();
+        let mut fmt = Formatter::new(false);
 
-        let out = fmt.file("myfile.txt".to_string(), 2, true);
+        let out = fmt.file("myfile.txt".to_string(), 123, 2, true, false);
         assert_eq!(out, "    └── myfile.txt\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 2, true);
+        let out = fmt.file("myfile.txt".to_string(), 123, 2, true, false);
         assert_eq!(out, "│   └── myfile.txt\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 2, true);
+        let out = fmt.file("myfile.txt".to_string(), 123, 2, true, false);
         assert_eq!(out, "    └── myfile.txt\n");
     }
 
     #[test]
+    fn test_nested_dir_long_format() {
+        let mut fmt = Formatter::new(true);
+
+        let out = fmt.file("myfile.txt".to_string(), 123, 2, true, false);
+        assert_eq!(out, "    └── myfile.txt (123B)\n");
+
+        fmt.add_dir(0);
+
+        let out = fmt.file("myfile.txt".to_string(), 123, 2, true, false);
+        assert_eq!(out, "│   └── myfile.txt (123B)\n");
+
+        fmt.remove_dir(0);
+
+        let out = fmt.file("myfile.txt".to_string(), 123, 2, true, false);
+        assert_eq!(out, "    └── myfile.txt (123B)\n");
+    }
+
+    #[test]
     fn test_depth_1_last() {
-        let fmt = Formatter::new();
-        let out = fmt.file("myfile.txt".to_string(), 1, true);
+        let fmt = Formatter::new(false);
+        let out = fmt.file("myfile.txt".to_string(), 123, 1, true, false);
         assert_eq!(out, "└── myfile.txt\n");
     }
 
     #[test]
     fn test_depth_1_not_last() {
-        let fmt = Formatter::new();
-        let out = fmt.file("myfile.txt".to_string(), 1, false);
+        let fmt = Formatter::new(false);
+        let out = fmt.file("myfile.txt".to_string(), 123, 1, false, false);
         assert_eq!(out, "├── myfile.txt\n");
     }
 
     #[test]
     fn test_top_level_file() {
-        let fmt = Formatter::new();
-        let out = fmt.file("myfile.txt".to_string(), 0, true);
+        let fmt = Formatter::new(false);
+        let out = fmt.file("myfile.txt".to_string(), 123, 0, true, false);
         assert_eq!(out, "myfile.txt\n");
     }
 
     #[test]
     fn test_summary() {
-        let fmt = Formatter::new();
+        let fmt = Formatter::new(false);
         assert_eq!(fmt.summary(72, 428), "72 directories, 428 files\n");
     }
 }

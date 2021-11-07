@@ -8,4 +8,5 @@ use crate::error::Result;
 #[automock]
 pub trait FS {
     fn list_dir(&self, dir: &Path) -> Result<Vec<PathBuf>>;
+    fn file_size(&self, path: &Path) -> Result<u64>;
 }

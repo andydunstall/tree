@@ -15,8 +15,12 @@ impl StdoutUI {
 }
 
 impl UI for StdoutUI {
-    fn file(&self, file_name: String, depth: usize, is_last: bool) {
-        print!("{}", self.formatter.file(file_name, depth, is_last));
+    fn file(&self, file_name: String, file_size: u64, depth: usize, is_last: bool, is_dir: bool) {
+        print!(
+            "{}",
+            self.formatter
+                .file(file_name, file_size, depth, is_last, is_dir)
+        );
     }
 
     fn summary(&self, summary: &Summary) {

@@ -33,7 +33,11 @@ fn rule(args: &Args) -> impl Rule {
 fn main() -> Result<()> {
     let args = Args::parse_cli()?;
 
-    let mut tree = Tree::new(rule(&args), OSFS::new(), StdoutUI::new(Formatter::new()));
+    let mut tree = Tree::new(
+        rule(&args),
+        OSFS::new(),
+        StdoutUI::new(Formatter::new(args.longformat)),
+    );
     tree.walk(Path::new(&args.dir))?;
     Ok(())
 }

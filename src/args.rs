@@ -12,6 +12,7 @@ pub struct Args {
     pub ignore: Vec<String>,
     pub gitignore: bool,
     pub treeignore: bool,
+    pub longformat: bool,
 }
 
 impl Args {
@@ -49,6 +50,11 @@ impl Args {
                     .short("c")
                     .help("Disable `~/.treeignore`"),
             )
+            .arg(
+                Arg::with_name("longformat")
+                    .short("l")
+                    .help("Display listing in long format"),
+            )
             .get_matches();
         Ok(Args {
             dir: Args::dir(&matches),
@@ -57,6 +63,7 @@ impl Args {
             ignore: Args::ignore(&matches),
             gitignore: Args::is_enabled(&matches, "gitignore"),
             treeignore: !Args::is_enabled(&matches, "disabletreeignore"),
+            longformat: Args::is_enabled(&matches, "longformat"),
         })
     }
 
