@@ -53,6 +53,7 @@ to the `.gitignore` file itself.
 ## Roadmap
 * Glob support
 * Add `-l` option to output long format similer to `ls -l`, such as file owner, permissions and size
+* Add more matching rules for `.gitignore` from https://git-scm.com/docs/gitignore#_pattern_format
 
 ## Licence
 See `LICENSE` for more information.
