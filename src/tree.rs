@@ -119,11 +119,12 @@ mod tests {
                 predicate::eq("mydir".to_string()),
                 predicate::eq(0),
                 predicate::eq(0),
+                predicate::eq(0),
                 predicate::eq(false),
                 predicate::eq(true),
             )
             .times(1)
-            .returning(|_, _, _, _, _| ());
+            .returning(|_, _, _, _, _, _| ());
         ui.expect_add_dir()
             .with(predicate::eq(0))
             .times(1)
