@@ -3,14 +3,15 @@ use std::collections::HashSet;
 pub struct Formatter {
     dirs: HashSet<usize>,
     long_format: bool,
+    count_lines: bool,
 }
 
 impl Formatter {
-    // TODO param here for long_format: bool
-    pub fn new(long_format: bool) -> Formatter {
+    pub fn new(long_format: bool, count_lines: bool) -> Formatter {
         Formatter {
             dirs: HashSet::new(),
             long_format: long_format,
+            count_lines: count_lines,
         }
     }
 
@@ -18,14 +19,20 @@ impl Formatter {
         &self,
         file_name: String,
         file_size: u64,
+        line_count: u64,
         depth: usize,
         is_last: bool,
         is_dir: bool,
     ) -> String {
         if depth > 0 {
-            self.file_nested(file_name, file_size, depth, is_last, is_dir)
+            self.file_nested(file_name, file_size, line_count, depth, is_last, is_dir)
         } else {
-            format!("{}{}\n", file_name, self.long_format(is_dir, file_size))
+            format!(
+                "{}{}{}\n",
+                file_name,
+                self.long_format(is_dir, file_size),
+                self.line_count_format(is_dir, line_count)
+            )
         }
     }
 
@@ -45,16 +52,18 @@ impl Formatter {
         &self,
         file_name: String,
         file_size: u64,
+        line_count: u64,
         depth: usize,
         is_last: bool,
         is_dir: bool,
     ) -> String {
         format!(
-            "{}{}{}{}\n",
+            "{}{}{}{}{}\n",
             self.indent(depth),
             self.prefix(is_last),
             file_name,
             self.long_format(is_dir, file_size),
+            self.line_count_format(is_dir, line_count),
         )
     }
 
@@ -82,6 +91,14 @@ impl Formatter {
     fn long_format(&self, is_dir: bool, size: u64) -> String {
         if self.long_format && !is_dir {
             format!(" ({}B)", size)
+        } else {
+            "".to_string()
+        }
+    }
+
+    fn line_count_format(&self, is_dir: bool, line_count: u64) -> String {
+        if self.count_lines && !is_dir {
+            format!(" ({}L)", line_count)
         } else {
             "".to_string()
         }

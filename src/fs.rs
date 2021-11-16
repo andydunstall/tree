@@ -9,4 +9,5 @@ use crate::error::Result;
 pub trait FS {
     fn list_dir(&self, dir: &Path) -> Result<Vec<PathBuf>>;
     fn file_size(&self, path: &Path) -> Result<u64>;
+    fn line_count(&self, path: &Path) -> Result<u64>;
 }

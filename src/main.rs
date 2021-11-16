@@ -16,10 +16,8 @@ fn rule(args: &Args) -> impl Rule {
     for ignore in &args.ignore {
         rules.push(Box::new(PathRule::new(Path::new(ignore))));
     }
-    if args.treeignore {
-        if let Some(treeignore) = open_treeignore() {
-            rules.push(Box::new(treeignore.rule()));
-        }
+    if let Some(treeignore) = open_treeignore() {
+        rules.push(Box::new(treeignore.rule()));
     }
     if args.gitignore {
         for gitignore in open_gitignores(Path::new(&args.dir)) {
@@ -36,7 +34,7 @@ fn main() -> Result<()> {
     let mut tree = Tree::new(
         rule(&args),
         OSFS::new(),
-        StdoutUI::new(Formatter::new(args.longformat)),
+        StdoutUI::new(Formatter::new(args.longformat, args.count_lines)),
     );
     tree.walk(Path::new(&args.dir))?;
     Ok(())

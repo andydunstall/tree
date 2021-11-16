@@ -5,6 +5,7 @@ authors = ["Andrew Dunstall <andydunstall@hotmail.co.uk>"]
 edition = "2018"
 
 [dependencies]
+bytecount = "0.6.2"
 clap = "2.33.3"
 dirs = "3.0.1"
 mockall = "0.9.1"

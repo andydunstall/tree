@@ -28,7 +28,7 @@ where
 
     pub fn walk(&mut self, dir: &Path) -> Result<()> {
         self.ui
-            .file(dir.to_str().unwrap().to_string(), 0, 0, false, true);
+            .file(dir.to_str().unwrap().to_string(), 0, 0, 0, false, true);
         let summary = self.walk_nested(dir, 1)?;
         self.ui.summary(&summary);
         Ok(())
@@ -54,8 +54,14 @@ where
                         }
 
                         summary.n_dirs += 1;
-                        self.ui
-                            .file(file_name.to_string(), 0, depth, i == list.len() - 1, true);
+                        self.ui.file(
+                            file_name.to_string(),
+                            0,
+                            0,
+                            depth,
+                            i == list.len() - 1,
+                            true,
+                        );
 
                         summary.add(&self.walk_nested(&path, depth + 1)?);
                     } else {
@@ -63,6 +69,7 @@ where
                         self.ui.file(
                             file_name.to_string(),
                             self.fs.file_size(path)?,
+                            self.fs.line_count(path)?,
                             depth,
                             i == list.len() - 1,
                             false,

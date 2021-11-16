@@ -11,8 +11,8 @@ pub struct Args {
     pub directories_only: bool,
     pub ignore: Vec<String>,
     pub gitignore: bool,
-    pub treeignore: bool,
     pub longformat: bool,
+    pub count_lines: bool,
 }
 
 impl Args {
@@ -46,14 +46,15 @@ impl Args {
                     .help("Include files listed in the workspace gitignores"),
             )
             .arg(
-                Arg::with_name("disabletreeignore")
-                    .short("c")
-                    .help("Disable `~/.treeignore`"),
-            )
-            .arg(
                 Arg::with_name("longformat")
                     .short("l")
                     .help("Display listing in long format"),
+            )
+            .arg(
+                Arg::with_name("count")
+                    .short("c")
+                    .long("count")
+                    .help("Display number of lines in each file"),
             )
             .get_matches();
         Ok(Args {
@@ -62,8 +63,8 @@ impl Args {
             directories_only: Args::is_enabled(&matches, "directories"),
             ignore: Args::ignore(&matches),
             gitignore: !Args::is_enabled(&matches, "gitignore"),
-            treeignore: !Args::is_enabled(&matches, "disabletreeignore"),
             longformat: Args::is_enabled(&matches, "longformat"),
+            count_lines: Args::is_enabled(&matches, "count"),
         })
     }
 
