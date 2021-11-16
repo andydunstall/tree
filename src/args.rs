@@ -43,7 +43,7 @@ impl Args {
                 Arg::with_name("gitignore")
                     .short("g")
                     .long("gitignore")
-                    .help("Hide files listed in the workspace gitignores"),
+                    .help("Include files listed in the workspace gitignores"),
             )
             .arg(
                 Arg::with_name("disabletreeignore")
@@ -61,7 +61,7 @@ impl Args {
             show_hidden: Args::is_enabled(&matches, "all"),
             directories_only: Args::is_enabled(&matches, "directories"),
             ignore: Args::ignore(&matches),
-            gitignore: Args::is_enabled(&matches, "gitignore"),
+            gitignore: !Args::is_enabled(&matches, "gitignore"),
             treeignore: !Args::is_enabled(&matches, "disabletreeignore"),
             longformat: Args::is_enabled(&matches, "longformat"),
         })
