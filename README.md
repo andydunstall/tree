@@ -31,9 +31,16 @@ cargo test
 ### Flags
 See `tree --help` for the full CLI.
 
-## Known Limitation
-* No glob support
-* Missing matching rules for `.gitignore` from https://git-scm.com/docs/gitignore#_pattern_format
+## Roadmap
+* Add color support
+	[ ] Standard files and directories = blue
+	[ ] Symlinks = light blue
+	[ ] Broken synlinks = red
+	[ ] Unaccessable = red
+* Improved error handling: Rather than crash if unable to access a file or
+directory print it as red and move on
+* Add glob support
+* Add missing matching rules for `.gitignore` from https://git-scm.com/docs/gitignore#_pattern_format
 
 ## Licence
 See `LICENSE` for more information.
