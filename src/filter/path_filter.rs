@@ -1,21 +1,21 @@
 use std::path::{Component, Path, PathBuf};
 
-use crate::rule::Rule;
+use crate::filter::Filter;
 
 // TODO(AD) Support glob
-pub struct PathRule {
+pub struct PathFilter {
     path: PathBuf,
 }
 
-impl PathRule {
-    pub fn new(path: &Path) -> PathRule {
-        PathRule {
+impl PathFilter {
+    pub fn new(path: &Path) -> PathFilter {
+        PathFilter {
             path: normalize_path(path),
         }
     }
 }
 
-impl Rule for PathRule {
+impl Filter for PathFilter {
     fn is_ignored(&self, path: &Path) -> bool {
         let mut path = normalize_path(path);
         loop {
@@ -77,38 +77,38 @@ mod tests {
 
     #[test]
     fn ignore_nested_path() {
-        let rule = PathRule::new(Path::new("a/b"));
-        assert!(rule.is_ignored(Path::new("./a/b")));
-        assert!(rule.is_ignored(Path::new("c/a/b")));
-        assert!(rule.is_ignored(Path::new("c/a/b/c")));
-        assert!(rule.is_ignored(Path::new("./a/./b/../b/c")));
-        assert!(rule.is_ignored(Path::new("./x/y/./a/./b/../b/c")));
-        assert!(!rule.is_ignored(Path::new("a/c/b")));
+        let filter = PathFilter::new(Path::new("a/b"));
+        assert!(filter.is_ignored(Path::new("./a/b")));
+        assert!(filter.is_ignored(Path::new("c/a/b")));
+        assert!(filter.is_ignored(Path::new("c/a/b/c")));
+        assert!(filter.is_ignored(Path::new("./a/./b/../b/c")));
+        assert!(filter.is_ignored(Path::new("./x/y/./a/./b/../b/c")));
+        assert!(!filter.is_ignored(Path::new("a/c/b")));
     }
 
     #[test]
     fn ignore_nested_file() {
-        let rule = PathRule::new(Path::new("myfile"));
-        assert!(rule.is_ignored(Path::new("dir/myfile")));
-        assert!(rule.is_ignored(Path::new("dir/./myfile")));
-        assert!(rule.is_ignored(Path::new("myfile/dir")));
+        let filter = PathFilter::new(Path::new("myfile"));
+        assert!(filter.is_ignored(Path::new("dir/myfile")));
+        assert!(filter.is_ignored(Path::new("dir/./myfile")));
+        assert!(filter.is_ignored(Path::new("myfile/dir")));
     }
 
     #[test]
     fn ignore_path() {
-        let rule = PathRule::new(Path::new("a/b/c"));
-        assert!(rule.is_ignored(Path::new("a/b/c")));
-        assert!(rule.is_ignored(Path::new("./a/b/c")));
-        assert!(rule.is_ignored(Path::new("./a/./b/../b/c")));
-        assert!(!rule.is_ignored(Path::new("a/b")));
+        let filter = PathFilter::new(Path::new("a/b/c"));
+        assert!(filter.is_ignored(Path::new("a/b/c")));
+        assert!(filter.is_ignored(Path::new("./a/b/c")));
+        assert!(filter.is_ignored(Path::new("./a/./b/../b/c")));
+        assert!(!filter.is_ignored(Path::new("a/b")));
     }
 
     #[test]
     fn ignore_file() {
-        let rule = PathRule::new(Path::new("myfile"));
-        assert!(rule.is_ignored(Path::new("myfile")));
-        assert!(rule.is_ignored(Path::new("././myfile")));
-        assert!(!rule.is_ignored(Path::new("notmyfile")));
-        assert!(!rule.is_ignored(Path::new("././notmyfile")));
+        let filter = PathFilter::new(Path::new("myfile"));
+        assert!(filter.is_ignored(Path::new("myfile")));
+        assert!(filter.is_ignored(Path::new("././myfile")));
+        assert!(!filter.is_ignored(Path::new("notmyfile")));
+        assert!(!filter.is_ignored(Path::new("././notmyfile")));
     }
 }

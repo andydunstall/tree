@@ -1,26 +1,26 @@
 use std::path::{Path, PathBuf};
 
 use crate::error::Result;
+use crate::filter::Filter;
 use crate::fs::FS;
-use crate::rule::Rule;
 use crate::summary::Summary;
 use crate::ui::UI;
 
 pub struct Tree<R, F, U> {
-    rule: R,
+    filter: R,
     fs: F,
     ui: U,
 }
 
 impl<R, F, U> Tree<R, F, U>
 where
-    R: Rule,
+    R: Filter,
     F: FS,
     U: UI,
 {
-    pub fn new(rule: R, fs: F, ui: U) -> Tree<R, F, U> {
+    pub fn new(filter: R, fs: F, ui: U) -> Tree<R, F, U> {
         Tree {
-            rule: rule,
+            filter: filter,
             fs: fs,
             ui: ui,
         }
@@ -86,7 +86,7 @@ where
     fn list_dir_matches(&self, dir: &Path) -> Result<Vec<PathBuf>> {
         let mut paths = vec![];
         for path in self.fs.list_dir(dir)? {
-            if !self.rule.is_ignored(&path) {
+            if !self.filter.is_ignored(&path) {
                 paths.push(path);
             }
         }
@@ -100,13 +100,13 @@ mod tests {
 
     use mockall::predicate;
 
+    use crate::filter::MockFilter;
     use crate::fs::MockFS;
-    use crate::rule::MockRule;
     use crate::ui::MockUI;
 
     #[test]
     fn dir_does_not_exist() {
-        let rule = MockRule::new();
+        let filter = MockFilter::new();
         let mut fs = MockFS::new();
         fs.expect_list_dir()
             .with(predicate::eq(Path::new("mydir")))
@@ -141,7 +141,7 @@ mod tests {
             .times(1)
             .returning(|_| ());
 
-        let mut tree = Tree::new(rule, fs, ui);
+        let mut tree = Tree::new(filter, fs, ui);
         tree.walk(Path::new("mydir")).unwrap();
     }
 }

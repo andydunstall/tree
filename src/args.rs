@@ -6,12 +6,22 @@ use crate::error::Result;
 
 #[derive(Clone, Debug)]
 pub struct Args {
+    // Directory to list contents of.
     pub dir: String,
+    // true if should list hidden files as well a non-hidden, false otherwise.
     pub show_hidden: bool,
+    // true if only directorie should be listed, false otherwise.
     pub directories_only: bool,
-    pub ignore: Vec<String>,
-    pub gitignore: bool,
+    // A list of paths to ignore.
+    // TODO(AD) what is this matching
+    pub ignore_paths: Vec<String>,
+    // true if the workpace gitignore should be used to filter output, false
+    // otherwise.
+    pub filter_gitignore: bool,
+    // true if the output should be displayed in long format, false otherwise.
     pub longformat: bool,
+    // true if the output should be displayed with the number of lines per
+    // file, false otherwise.
     pub count_lines: bool,
 }
 
@@ -46,7 +56,7 @@ impl Args {
                     .help("Include files listed in the workspace gitignores"),
             )
             .arg(
-                Arg::with_name("longformat")
+                Arg::with_name("long")
                     .short("l")
                     .help("Display listing in long format"),
             )
@@ -61,9 +71,9 @@ impl Args {
             dir: Args::dir(&matches),
             show_hidden: Args::is_enabled(&matches, "all"),
             directories_only: Args::is_enabled(&matches, "directories"),
-            ignore: Args::ignore(&matches),
-            gitignore: !Args::is_enabled(&matches, "gitignore"),
-            longformat: Args::is_enabled(&matches, "longformat"),
+            ignore_paths: Args::ignore_paths(&matches),
+            filter_gitignore: !Args::is_enabled(&matches, "gitignore"),
+            longformat: Args::is_enabled(&matches, "long"),
             count_lines: Args::is_enabled(&matches, "count"),
         })
     }
@@ -72,7 +82,7 @@ impl Args {
         matches.value_of("directory").unwrap_or(".").to_string()
     }
 
-    fn ignore(matches: &ArgMatches) -> Vec<String> {
+    fn ignore_paths(matches: &ArgMatches) -> Vec<String> {
         if let Some(ignore) = matches.values_of("ignore") {
             let ignore: Vec<String> = ignore.map(|s| s.to_string()).collect();
             ignore

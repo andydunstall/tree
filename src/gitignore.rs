@@ -3,8 +3,8 @@ use std::path::Path;
 use std::vec::Vec;
 
 pub use crate::error::Result;
+pub use crate::filter::{Filter, OverrideFilter, PathFilter, PriorityFilter};
 pub use crate::ignore_config::IgnoreConfig;
-pub use crate::rule::{OverrideRule, PathRule, PriorityRule, Rule};
 
 const GITIGNORE: &str = ".gitignore";
 
@@ -15,19 +15,19 @@ const GITIGNORE: &str = ".gitignore";
 // Note the order is important as deeper gitignores can override higher level,
 // so returned in order from deepest to top.
 pub fn open_gitignores(dir: &Path) -> Vec<IgnoreConfig> {
-    let mut rulesets = vec![];
+    let mut filtersets = vec![];
     if let Ok(mut path) = fs::canonicalize(dir) {
         loop {
             if path.join(GITIGNORE).is_file() {
                 if let Ok(gitignore) = fs::read_to_string(path.join(GITIGNORE)) {
-                    rulesets.push(IgnoreConfig::new(&gitignore, &path));
+                    filtersets.push(IgnoreConfig::new(&gitignore, &path));
                 }
             }
 
             // Once reached the top of the git repository return all the
             // gitignores.
             if is_git_repository(&path) {
-                return rulesets;
+                return filtersets;
             }
 
             if let Some(p) = path.parent() {
