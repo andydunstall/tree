@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use crate::error::Result;
 use crate::filter::Filter;
-use crate::fs::FS;
+use crate::fs::{File, FS};
 use crate::summary::Summary;
 use crate::ui::UI;
 
@@ -26,16 +26,21 @@ where
         }
     }
 
-    pub fn walk(&mut self, dir: &Path) -> Result<()> {
-        self.ui
-            .file(dir.to_str().unwrap().to_string(), 0, 0, 0, false, true);
-        let summary = self.walk_nested(dir, 1)?;
+    // list recursively walk the file tree starting at root printing each
+    // element seen.
+    pub fn list(&mut self, root: &Path) -> Result<()> {
+        self.ui.file(
+            File::new(root.to_str().unwrap().to_string(), 0, 0),
+            0,
+            false,
+            true,
+        );
+        let summary = self.walk(root, 1)?;
         self.ui.summary(&summary);
         Ok(())
     }
 
-    // TODO(AD) Refactor and TDD
-    fn walk_nested(&mut self, dir: &Path, depth: usize) -> Result<Summary> {
+    fn walk(&mut self, dir: &Path, depth: usize) -> Result<Summary> {
         let mut summary = Summary {
             n_dirs: 0,
             n_files: 0,
@@ -55,21 +60,21 @@ where
 
                         summary.n_dirs += 1;
                         self.ui.file(
-                            file_name.to_string(),
-                            0,
-                            0,
+                            File::new(file_name.to_string(), 0, 0),
                             depth,
                             i == list.len() - 1,
                             true,
                         );
 
-                        summary.add(&self.walk_nested(&path, depth + 1)?);
+                        summary.add(&self.walk(&path, depth + 1)?);
                     } else {
                         summary.n_files += 1;
                         self.ui.file(
-                            file_name.to_string(),
-                            self.fs.file_size(path)?,
-                            self.fs.line_count(path)?,
+                            File::new(
+                                file_name.to_string(),
+                                self.fs.file_size(path)?,
+                                self.fs.line_count(path)?,
+                            ),
                             depth,
                             i == list.len() - 1,
                             false,
@@ -116,15 +121,13 @@ mod tests {
         let mut ui = MockUI::new();
         ui.expect_file()
             .with(
-                predicate::eq("mydir".to_string()),
-                predicate::eq(0),
-                predicate::eq(0),
+                predicate::eq(File::new("mydir".to_string(), 0, 0)),
                 predicate::eq(0),
                 predicate::eq(false),
                 predicate::eq(true),
             )
             .times(1)
-            .returning(|_, _, _, _, _, _| ());
+            .returning(|_, _, _, _| ());
         ui.expect_add_dir()
             .with(predicate::eq(0))
             .times(1)
@@ -142,6 +145,6 @@ mod tests {
             .returning(|_| ());
 
         let mut tree = Tree::new(filter, fs, ui);
-        tree.walk(Path::new("mydir")).unwrap();
+        tree.list(Path::new("mydir")).unwrap();
     }
 }

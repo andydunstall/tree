@@ -13,12 +13,8 @@ mod ui;
 
 pub use crate::tree::Tree;
 pub use args::Args;
-pub use error::{Error, Result};
-pub use filter::{DirectoriesOnlyFilter, Filter, HideHiddenFilter, PathFilter, PriorityFilter};
-pub use formatter::Formatter;
+pub use error::Result;
 pub use fs::FS;
-pub use gitignore::open_gitignores;
-pub use ignore_config::IgnoreConfig;
 pub use os_fs::OSFS;
 pub use stdout_ui::StdoutUI;
 pub use ui::UI;

@@ -1,28 +1,32 @@
+use std::path::Path;
 use std::vec::Vec;
 
 use clap::{App, Arg, ArgMatches};
 
 use crate::error::Result;
+use crate::filter::{DirectoriesOnlyFilter, Filter, HideHiddenFilter, PathFilter, PriorityFilter};
+use crate::formatter::Formatter;
+use crate::gitignore::open_gitignores;
 
 #[derive(Clone, Debug)]
 pub struct Args {
     // Directory to list contents of.
-    pub dir: String,
+    pub root: String,
     // true if should list hidden files as well a non-hidden, false otherwise.
-    pub show_hidden: bool,
+    show_hidden: bool,
     // true if only directorie should be listed, false otherwise.
-    pub directories_only: bool,
+    directories_only: bool,
     // A list of paths to ignore.
     // TODO(AD) what is this matching
-    pub ignore_paths: Vec<String>,
+    ignore_paths: Vec<String>,
     // true if the workpace gitignore should be used to filter output, false
     // otherwise.
-    pub filter_gitignore: bool,
+    filter_gitignore: bool,
     // true if the output should be displayed in long format, false otherwise.
-    pub longformat: bool,
+    longformat: bool,
     // true if the output should be displayed with the number of lines per
     // file, false otherwise.
-    pub count_lines: bool,
+    count_lines: bool,
 }
 
 impl Args {
@@ -31,7 +35,7 @@ impl Args {
             .version("0.3.0")
             .about("List the contents of directories in a tree-like format.")
             .arg(
-                Arg::with_name("directory")
+                Arg::with_name("root")
                     .help("Directory to list")
                     .takes_value(true),
             )
@@ -68,7 +72,7 @@ impl Args {
             )
             .get_matches();
         Ok(Args {
-            dir: Args::dir(&matches),
+            root: Args::root(&matches),
             show_hidden: Args::is_enabled(&matches, "all"),
             directories_only: Args::is_enabled(&matches, "directories"),
             ignore_paths: Args::ignore_paths(&matches),
@@ -78,8 +82,33 @@ impl Args {
         })
     }
 
-    fn dir(matches: &ArgMatches) -> String {
-        matches.value_of("directory").unwrap_or(".").to_string()
+    // Creates a filter following the configuration in args.
+    pub fn to_filter(&self) -> impl Filter {
+        let mut filters: Vec<Box<dyn Filter>> = vec![];
+        if !self.show_hidden {
+            filters.push(Box::new(HideHiddenFilter::new()));
+        }
+        if self.directories_only {
+            filters.push(Box::new(DirectoriesOnlyFilter::new()));
+        }
+        for path in &self.ignore_paths {
+            filters.push(Box::new(PathFilter::new(Path::new(path))));
+        }
+        if self.filter_gitignore {
+            for path in open_gitignores(Path::new(&self.root)) {
+                // Note order important (higher priority first).
+                filters.push(Box::new(path.filter()));
+            }
+        }
+        PriorityFilter::new(filters)
+    }
+
+    pub fn to_formatter(&self) -> Formatter {
+        Formatter::new(self.longformat, self.count_lines)
+    }
+
+    fn root(matches: &ArgMatches) -> String {
+        matches.value_of("root").unwrap_or(".").to_string()
     }
 
     fn ignore_paths(matches: &ArgMatches) -> Vec<String> {

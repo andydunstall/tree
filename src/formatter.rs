@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use crate::fs::File;
+
 pub struct Formatter {
     dirs: HashSet<usize>,
     long_format: bool,
@@ -15,23 +17,15 @@ impl Formatter {
         }
     }
 
-    pub fn file(
-        &self,
-        file_name: String,
-        file_size: u64,
-        line_count: u64,
-        depth: usize,
-        is_last: bool,
-        is_dir: bool,
-    ) -> String {
+    pub fn file(&self, file: File, depth: usize, is_last: bool, is_dir: bool) -> String {
         if depth > 0 {
-            self.file_nested(file_name, file_size, line_count, depth, is_last, is_dir)
+            self.file_nested(file, depth, is_last, is_dir)
         } else {
             format!(
                 "{}{}{}\n",
-                file_name,
-                self.long_format(is_dir, file_size),
-                self.line_count_format(is_dir, line_count)
+                file.name,
+                self.long_format(is_dir, file.size),
+                self.line_count_format(is_dir, file.line_count)
             )
         }
     }
@@ -48,22 +42,14 @@ impl Formatter {
         self.dirs.remove(&depth);
     }
 
-    fn file_nested(
-        &self,
-        file_name: String,
-        file_size: u64,
-        line_count: u64,
-        depth: usize,
-        is_last: bool,
-        is_dir: bool,
-    ) -> String {
+    fn file_nested(&self, file: File, depth: usize, is_last: bool, is_dir: bool) -> String {
         format!(
             "{}{}{}{}{}\n",
             self.indent(depth),
             self.prefix(is_last),
-            file_name,
-            self.long_format(is_dir, file_size),
-            self.line_count_format(is_dir, line_count),
+            file.name,
+            self.long_format(is_dir, file.size),
+            self.line_count_format(is_dir, file.line_count),
         )
     }
 
@@ -113,17 +99,32 @@ mod tests {
     fn test_nested_dir() {
         let mut fmt = Formatter::new(false, false);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "    └── myfile.txt\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "│   └── myfile.txt\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "    └── myfile.txt\n");
     }
 
@@ -131,17 +132,32 @@ mod tests {
     fn test_nested_dir_long_format() {
         let mut fmt = Formatter::new(true, false);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "    └── myfile.txt (123B)\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "│   └── myfile.txt (123B)\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "    └── myfile.txt (123B)\n");
     }
 
@@ -149,38 +165,68 @@ mod tests {
     fn test_nested_dir_line_count() {
         let mut fmt = Formatter::new(false, true);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "    └── myfile.txt (456L)\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "│   └── myfile.txt (456L)\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 2, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            2,
+            true,
+            false,
+        );
         assert_eq!(out, "    └── myfile.txt (456L)\n");
     }
 
     #[test]
     fn test_depth_1_last() {
         let fmt = Formatter::new(false, false);
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 1, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            1,
+            true,
+            false,
+        );
         assert_eq!(out, "└── myfile.txt\n");
     }
 
     #[test]
     fn test_depth_1_not_last() {
         let fmt = Formatter::new(false, false);
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 1, false, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            1,
+            false,
+            false,
+        );
         assert_eq!(out, "├── myfile.txt\n");
     }
 
     #[test]
     fn test_top_level_file() {
         let fmt = Formatter::new(false, false);
-        let out = fmt.file("myfile.txt".to_string(), 123, 456, 0, true, false);
+        let out = fmt.file(
+            File::new("myfile.txt".to_string(), 123, 456),
+            0,
+            true,
+            false,
+        );
         assert_eq!(out, "myfile.txt\n");
     }
 
