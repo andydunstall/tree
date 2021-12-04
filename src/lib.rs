@@ -5,9 +5,9 @@ mod formatter;
 mod fs;
 mod gitignore;
 mod ignore_config;
-mod os_fs;
 mod stdout_ui;
 mod summary;
+mod system_fs;
 mod tree;
 mod ui;
 
@@ -15,6 +15,6 @@ pub use crate::tree::Tree;
 pub use args::Args;
 pub use error::Result;
 pub use fs::FS;
-pub use os_fs::OSFS;
 pub use stdout_ui::StdoutUI;
+pub use system_fs::SystemFS;
 pub use ui::UI;

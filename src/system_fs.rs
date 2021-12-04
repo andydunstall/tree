@@ -6,15 +6,15 @@ use std::vec::Vec;
 use crate::error::{Error, Result};
 use crate::fs::{File, FS};
 
-pub struct OSFS;
+pub struct SystemFS;
 
-impl OSFS {
-    pub fn new() -> OSFS {
-        OSFS {}
+impl SystemFS {
+    pub fn new() -> SystemFS {
+        SystemFS {}
     }
 }
 
-impl FS for OSFS {
+impl FS for SystemFS {
     fn metadata(&self, dir: &Path) -> Result<File> {
         Ok(File::new(dir, self.file_size(dir)?, self.line_count(dir)?))
     }
@@ -40,7 +40,7 @@ impl FS for OSFS {
     }
 }
 
-impl OSFS {
+impl SystemFS {
     fn file_size(&self, path: &Path) -> Result<u64> {
         if path.is_dir() {
             Ok(0)
