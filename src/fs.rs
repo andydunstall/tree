@@ -13,9 +13,9 @@ pub struct File {
 }
 
 impl File {
-    pub fn new(name: String, size: u64, line_count: u64) -> File {
+    pub fn new(path: &Path, size: u64, line_count: u64) -> File {
         File {
-            name,
+            name: path_to_filename(path),
             size,
             line_count,
         }
@@ -24,7 +24,15 @@ impl File {
 
 #[automock]
 pub trait FS {
+    fn metadata(&self, dir: &Path) -> Result<File>;
     fn list_dir(&self, dir: &Path) -> Result<Vec<PathBuf>>;
-    fn file_size(&self, path: &Path) -> Result<u64>;
-    fn line_count(&self, path: &Path) -> Result<u64>;
+}
+
+fn path_to_filename(dir: &Path) -> String {
+    if let Some(file_name) = dir.file_name() {
+        // Assume unicode path.
+        return file_name.to_str().unwrap().to_string();
+    } else {
+        return ".".to_string();
+    }
 }

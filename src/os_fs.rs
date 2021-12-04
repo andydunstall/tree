@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::vec::Vec;
 
 use crate::error::{Error, Result};
-use crate::fs::FS;
+use crate::fs::{File, FS};
 
 pub struct OSFS;
 
@@ -15,6 +15,10 @@ impl OSFS {
 }
 
 impl FS for OSFS {
+    fn metadata(&self, dir: &Path) -> Result<File> {
+        Ok(File::new(dir, self.file_size(dir)?, self.line_count(dir)?))
+    }
+
     fn list_dir(&self, dir: &Path) -> Result<Vec<PathBuf>> {
         if !dir.is_dir() {
             return Ok(vec![]);
@@ -34,12 +38,21 @@ impl FS for OSFS {
         paths.sort();
         Ok(paths)
     }
+}
 
+impl OSFS {
     fn file_size(&self, path: &Path) -> Result<u64> {
-        Ok(fs::metadata(path)?.len())
+        if path.is_dir() {
+            Ok(0)
+        } else {
+            Ok(fs::metadata(path)?.len())
+        }
     }
 
     fn line_count(&self, path: &Path) -> Result<u64> {
+        if path.is_dir() {
+            return Ok(0);
+        }
         let f = fs::File::open(path)?;
         let mut reader = BufReader::with_capacity(1024 * 32, f);
         let mut count = 0;

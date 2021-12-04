@@ -3,6 +3,8 @@ use crate::fs::File;
 use crate::summary::Summary;
 use crate::UI;
 
+use colored::*;
+
 pub struct StdoutUI {
     formatter: Formatter,
 }
@@ -18,6 +20,14 @@ impl StdoutUI {
 impl UI for StdoutUI {
     fn file(&self, file: File, depth: usize, is_last: bool, is_dir: bool) {
         print!("{}", self.formatter.file(file, depth, is_last, is_dir));
+    }
+
+    // TODO(AD) Prefix should not be red.
+    fn invalid_file(&self, file: File, depth: usize, is_last: bool, is_dir: bool) {
+        print!(
+            "{}",
+            self.formatter.file(file, depth, is_last, is_dir).red()
+        );
     }
 
     fn summary(&self, summary: &Summary) {

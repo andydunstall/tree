@@ -10,6 +10,6 @@ fn main() -> Result<()> {
         OSFS::new(),
         StdoutUI::new(args.to_formatter()),
     );
-    tree.list(Path::new(&args.root))?;
+    tree.list(Path::new(&args.root));
     Ok(())
 }

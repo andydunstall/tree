@@ -17,7 +17,6 @@ pub struct Args {
     // true if only directorie should be listed, false otherwise.
     directories_only: bool,
     // A list of paths to ignore.
-    // TODO(AD) what is this matching
     ignore_paths: Vec<String>,
     // true if the workpace gitignore should be used to filter output, false
     // otherwise.

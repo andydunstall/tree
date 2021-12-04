@@ -93,38 +93,25 @@ impl Formatter {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use super::*;
 
     #[test]
     fn test_nested_dir() {
         let mut fmt = Formatter::new(false, false);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "    └── myfile.txt\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "│   └── myfile.txt\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "    └── myfile.txt\n");
     }
 
@@ -132,32 +119,17 @@ mod tests {
     fn test_nested_dir_long_format() {
         let mut fmt = Formatter::new(true, false);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "    └── myfile.txt (123B)\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "│   └── myfile.txt (123B)\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "    └── myfile.txt (123B)\n");
     }
 
@@ -165,44 +137,24 @@ mod tests {
     fn test_nested_dir_line_count() {
         let mut fmt = Formatter::new(false, true);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "    └── myfile.txt (456L)\n");
 
         fmt.add_dir(0);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "│   └── myfile.txt (456L)\n");
 
         fmt.remove_dir(0);
 
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            2,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 2, true, false);
         assert_eq!(out, "    └── myfile.txt (456L)\n");
     }
 
     #[test]
     fn test_depth_1_last() {
         let fmt = Formatter::new(false, false);
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            1,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 1, true, false);
         assert_eq!(out, "└── myfile.txt\n");
     }
 
@@ -210,7 +162,7 @@ mod tests {
     fn test_depth_1_not_last() {
         let fmt = Formatter::new(false, false);
         let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
+            File::new(Path::new("myfile.txt"), 123, 456),
             1,
             false,
             false,
@@ -221,12 +173,7 @@ mod tests {
     #[test]
     fn test_top_level_file() {
         let fmt = Formatter::new(false, false);
-        let out = fmt.file(
-            File::new("myfile.txt".to_string(), 123, 456),
-            0,
-            true,
-            false,
-        );
+        let out = fmt.file(File::new(Path::new("myfile.txt"), 123, 456), 0, true, false);
         assert_eq!(out, "myfile.txt\n");
     }
 

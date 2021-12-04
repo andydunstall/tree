@@ -28,62 +28,44 @@ where
 
     // list recursively walk the file tree starting at root printing each
     // element seen.
-    pub fn list(&mut self, root: &Path) -> Result<()> {
-        self.ui.file(
-            File::new(root.to_str().unwrap().to_string(), 0, 0),
-            0,
-            false,
-            true,
-        );
-        let summary = self.walk(root, 1)?;
+    pub fn list(&mut self, root: &Path) {
+        let summary = self.walk(root, 0, false);
         self.ui.summary(&summary);
-        Ok(())
     }
 
-    fn walk(&mut self, dir: &Path, depth: usize) -> Result<Summary> {
-        let mut summary = Summary {
-            n_dirs: 0,
-            n_files: 0,
-        };
+    fn walk(&mut self, root: &Path, depth: usize, is_last: bool) -> Summary {
+        let mut summary = Summary::new();
 
-        self.ui.add_dir(depth - 1);
+        self.ui.add_dir(depth);
 
-        let list = self.list_dir_matches(dir)?;
+        if let Ok(s) = self.rename(root, depth, is_last) {
+            summary.add(&s);
+        } else {
+            let file = File::new(root, 0, 0);
+            self.ui.invalid_file(file, depth, is_last, true);
+        }
+
+        self.ui.remove_dir(depth);
+
+        summary
+    }
+
+    fn rename(&mut self, root: &Path, depth: usize, is_last: bool) -> Result<Summary> {
+        let mut summary = Summary::new();
+
+        if root.is_dir() && is_last {
+            self.ui.remove_dir(depth - 1);
+        }
+
+        summary.incr(root.is_dir());
+        self.ui
+            .file(self.fs.metadata(root)?, depth, is_last, root.is_dir());
+
+        let list = self.list_dir_matches(root)?;
         for i in 0..list.len() {
             let path = &list[i];
-            if let Some(file_name) = path.file_name() {
-                if let Some(file_name) = file_name.to_str() {
-                    if path.is_dir() {
-                        if i == list.len() - 1 {
-                            self.ui.remove_dir(depth - 1);
-                        }
-
-                        summary.n_dirs += 1;
-                        self.ui.file(
-                            File::new(file_name.to_string(), 0, 0),
-                            depth,
-                            i == list.len() - 1,
-                            true,
-                        );
-
-                        summary.add(&self.walk(&path, depth + 1)?);
-                    } else {
-                        summary.n_files += 1;
-                        self.ui.file(
-                            File::new(
-                                file_name.to_string(),
-                                self.fs.file_size(path)?,
-                                self.fs.line_count(path)?,
-                            ),
-                            depth,
-                            i == list.len() - 1,
-                            false,
-                        );
-                    }
-                }
-            }
+            summary.add(&self.walk(&path, depth + 1, i == list.len() - 1));
         }
-        self.ui.remove_dir(depth);
 
         Ok(summary)
     }
@@ -96,55 +78,5 @@ where
             }
         }
         Ok(paths)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    use mockall::predicate;
-
-    use crate::filter::MockFilter;
-    use crate::fs::MockFS;
-    use crate::ui::MockUI;
-
-    #[test]
-    fn dir_does_not_exist() {
-        let filter = MockFilter::new();
-        let mut fs = MockFS::new();
-        fs.expect_list_dir()
-            .with(predicate::eq(Path::new("mydir")))
-            .times(1)
-            .returning(|_| Ok(vec![]));
-
-        let mut ui = MockUI::new();
-        ui.expect_file()
-            .with(
-                predicate::eq(File::new("mydir".to_string(), 0, 0)),
-                predicate::eq(0),
-                predicate::eq(false),
-                predicate::eq(true),
-            )
-            .times(1)
-            .returning(|_, _, _, _| ());
-        ui.expect_add_dir()
-            .with(predicate::eq(0))
-            .times(1)
-            .returning(|_| ());
-        ui.expect_remove_dir()
-            .with(predicate::eq(1))
-            .times(1)
-            .returning(|_| ());
-        ui.expect_summary()
-            .with(predicate::eq(&Summary {
-                n_dirs: 0,
-                n_files: 0,
-            }))
-            .times(1)
-            .returning(|_| ());
-
-        let mut tree = Tree::new(filter, fs, ui);
-        tree.list(Path::new("mydir")).unwrap();
     }
 }
