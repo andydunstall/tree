@@ -37,7 +37,7 @@ impl UI for StdoutUI {
                     print!(
                         "{}{}\n",
                         self.formatter.prefix(depth, is_last),
-                        self.formatter.file(file).red()
+                        self.formatter.file(file).bright_red()
                     );
                 }
             }
@@ -52,7 +52,7 @@ impl UI for StdoutUI {
                     print!(
                         "{}{}\n",
                         self.formatter.prefix(depth, is_last),
-                        self.formatter.file(file).red()
+                        self.formatter.file(file).bright_red()
                     );
                 }
             }
@@ -61,13 +61,13 @@ impl UI for StdoutUI {
                     print!(
                         "{}{}\n",
                         self.formatter.prefix(depth, is_last),
-                        self.formatter.file(file).cyan(),
+                        self.formatter.file(file).bright_cyan(),
                     );
                 } else {
                     print!(
                         "{}{}\n",
                         self.formatter.prefix(depth, is_last),
-                        self.formatter.file(file).red()
+                        self.formatter.file(file).bright_red()
                     );
                 }
             }
