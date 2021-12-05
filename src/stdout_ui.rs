@@ -18,21 +18,65 @@ impl StdoutUI {
 }
 
 impl UI for StdoutUI {
-    fn file(&self, file: File, depth: usize, is_last: bool, is_dir: bool) {
-        print!("{}", self.formatter.file(file, depth, is_last, is_dir));
-    }
-
-    // TODO(AD) Prefix should not be red.
-    fn invalid_file(&self, file: File, depth: usize, is_last: bool, is_dir: bool) {
-        print!(
-            "{}",
-            self.formatter.file(file, depth, is_last, is_dir).red()
-        );
+    fn file(&self, file: &File, depth: usize, is_last: bool) {
+        match file {
+            File::RegularFile(f) => {
+                if f.executable {
+                    print!(
+                        "{}{}\n",
+                        self.formatter.prefix(depth, is_last),
+                        self.formatter.file(file).bright_green()
+                    );
+                } else if f.accessible {
+                    print!(
+                        "{}{}\n",
+                        self.formatter.prefix(depth, is_last),
+                        self.formatter.file(file)
+                    );
+                } else {
+                    print!(
+                        "{}{}\n",
+                        self.formatter.prefix(depth, is_last),
+                        self.formatter.file(file).red()
+                    );
+                }
+            }
+            File::Directory(dir) => {
+                if dir.accessible {
+                    print!(
+                        "{}{}\n",
+                        self.formatter.prefix(depth, is_last),
+                        self.formatter.file(file)
+                    );
+                } else {
+                    print!(
+                        "{}{}\n",
+                        self.formatter.prefix(depth, is_last),
+                        self.formatter.file(file).red()
+                    );
+                }
+            }
+            File::Symlink(symlink) => {
+                if symlink.accessible {
+                    print!(
+                        "{}{}\n",
+                        self.formatter.prefix(depth, is_last),
+                        self.formatter.file(file).cyan(),
+                    );
+                } else {
+                    print!(
+                        "{}{}\n",
+                        self.formatter.prefix(depth, is_last),
+                        self.formatter.file(file).red()
+                    );
+                }
+            }
+        }
     }
 
     fn summary(&self, summary: &Summary) {
         print!(
-            "\n{}",
+            "\n{}\n",
             self.formatter.summary(summary.n_dirs, summary.n_files)
         );
     }

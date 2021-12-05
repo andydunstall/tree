@@ -1,6 +1,5 @@
 use std::path::{Path, PathBuf};
 
-use crate::error::Result;
 use crate::filter::Filter;
 use crate::fs::{File, FS};
 use crate::summary::Summary;
@@ -38,11 +37,22 @@ where
 
         self.ui.add_dir(depth);
 
-        if let Ok(s) = self.rename(root, depth, is_last) {
-            summary.add(&s);
-        } else {
-            let file = File::new(root, 0, 0);
-            self.ui.invalid_file(file, depth, is_last, true);
+        if root.is_dir() && is_last {
+            self.ui.remove_dir(depth - 1);
+        }
+
+        summary.incr(root.is_dir());
+        let file = self.fs.open(root);
+        self.ui.file(&file, depth, is_last);
+
+        if let File::Directory(dir) = file {
+            let filtered = self.filter_paths(dir.contents);
+            for i in 0..filtered.len() {
+                let path = &filtered[i];
+                if !self.filter.is_ignored(path) {
+                    summary.add(&self.walk(&path, depth + 1, i == filtered.len() - 1));
+                }
+            }
         }
 
         self.ui.remove_dir(depth);
@@ -50,33 +60,13 @@ where
         summary
     }
 
-    fn rename(&mut self, root: &Path, depth: usize, is_last: bool) -> Result<Summary> {
-        let mut summary = Summary::new();
-
-        if root.is_dir() && is_last {
-            self.ui.remove_dir(depth - 1);
-        }
-
-        summary.incr(root.is_dir());
-        self.ui
-            .file(self.fs.metadata(root)?, depth, is_last, root.is_dir());
-
-        let list = self.list_dir_matches(root)?;
-        for i in 0..list.len() {
-            let path = &list[i];
-            summary.add(&self.walk(&path, depth + 1, i == list.len() - 1));
-        }
-
-        Ok(summary)
-    }
-
-    fn list_dir_matches(&self, dir: &Path) -> Result<Vec<PathBuf>> {
-        let mut paths = vec![];
-        for path in self.fs.list_dir(dir)? {
+    fn filter_paths(&self, paths: Vec<PathBuf>) -> Vec<PathBuf> {
+        let mut filtered = vec![];
+        for path in paths {
             if !self.filter.is_ignored(&path) {
-                paths.push(path);
+                filtered.push(path);
             }
         }
-        Ok(paths)
+        filtered
     }
 }

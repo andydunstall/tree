@@ -11,5 +11,6 @@ fn main() -> Result<()> {
         StdoutUI::new(args.to_formatter()),
     );
     tree.list(Path::new(&args.root));
+
     Ok(())
 }
