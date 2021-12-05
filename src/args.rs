@@ -31,7 +31,7 @@ pub struct Args {
 impl Args {
     pub fn parse_cli() -> Result<Args> {
         let matches = App::new("tree")
-            .version("0.3.0")
+            .version("0.4.0")
             .about("List the contents of directories in a tree-like format.")
             .arg(
                 Arg::with_name("root")
