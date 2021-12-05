@@ -11,7 +11,7 @@ use crate::gitignore::open_gitignores;
 #[derive(Clone, Debug)]
 pub struct Args {
     // Directory to list contents of.
-    pub root: String,
+    root: String,
     // true if should list hidden files as well a non-hidden, false otherwise.
     show_hidden: bool,
     // true if only directorie should be listed, false otherwise.
@@ -79,6 +79,10 @@ impl Args {
             longformat: Args::is_enabled(&matches, "long"),
             count_lines: Args::is_enabled(&matches, "count"),
         })
+    }
+
+    pub fn root_path(&self) -> &Path {
+        Path::new(&self.root)
     }
 
     // Creates a filter following the configuration in args.

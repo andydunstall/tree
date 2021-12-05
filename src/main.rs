@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use tree::{Args, Result, StdoutUI, SystemFS, Tree};
 
 fn main() -> Result<()> {
@@ -10,7 +8,7 @@ fn main() -> Result<()> {
         SystemFS::new(),
         StdoutUI::new(args.to_formatter()),
     );
-    tree.list(Path::new(&args.root));
+    tree.list(args.root_path());
 
     Ok(())
 }
