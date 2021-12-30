@@ -125,13 +125,8 @@ fn list_dir(dir: &Path) -> Result<Vec<PathBuf>> {
 
     let mut paths = vec![];
     for entry in fs::read_dir(dir)? {
-        match entry {
-            Ok(entry) => {
-                paths.push(entry.path());
-            }
-            Err(err) => {
-                return Err(Error::from(err));
-            }
+        if let Ok(entry) = entry {
+            paths.push(entry.path());
         }
     }
     paths.sort();
@@ -149,8 +144,164 @@ fn is_symlink(path: &Path) -> bool {
 fn path_to_filename(path: &Path) -> String {
     if let Some(file_name) = path.file_name() {
         // Assume unicode path.
-        return file_name.to_str().unwrap().to_string();
+        file_name.to_str().unwrap().to_string()
     } else {
-        return ".".to_string();
+        ".".to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs::OpenOptions;
+    use std::io::Write;
+    use std::os::unix::fs::symlink;
+    use std::os::unix::fs::OpenOptionsExt;
+
+    use rand::{distributions::Alphanumeric, Rng};
+    use tempfile::tempdir;
+
+    use super::*;
+
+    #[test]
+    fn open_regular_file() {
+        let dir = tempdir().unwrap();
+        let name = random_path();
+        let path = dir.path().join(name.clone());
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .mode(0o660)
+            .open(path.clone())
+            .unwrap();
+        file.write_all(b"a\nb\nc\n").unwrap();
+
+        let expected = File::RegularFile(RegularFile {
+            name,
+            size: 6,
+            line_count: 3,
+            executable: false,
+            accessible: true,
+        });
+
+        let fs = SystemFS::new();
+        assert_eq!(expected, fs.open(&path));
+    }
+
+    #[test]
+    fn open_regular_file_executable() {
+        let dir = tempdir().unwrap();
+        let name = random_path();
+        let path = dir.path().join(name.clone());
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .mode(0o770)
+            .open(path.clone())
+            .unwrap();
+        file.write_all(b"a\nb\nc\n").unwrap();
+
+        let expected = File::RegularFile(RegularFile {
+            name,
+            size: 6,
+            line_count: 3,
+            executable: true,
+            accessible: true,
+        });
+
+        let fs = SystemFS::new();
+        assert_eq!(expected, fs.open(&path));
+    }
+
+    #[test]
+    fn open_regular_file_inaccessible() {
+        let dir = tempdir().unwrap();
+        let name = random_path();
+        let path_not_found = dir.path().join(name.clone());
+
+        let expected = File::RegularFile(RegularFile {
+            name,
+            size: 0,
+            line_count: 0,
+            executable: false,
+            accessible: false,
+        });
+
+        let fs = SystemFS::new();
+        assert_eq!(expected, fs.open(&path_not_found));
+    }
+
+    #[test]
+    fn open_directory() {
+        let dir = tempdir().unwrap();
+        let name = random_path();
+        let path = dir.path().join(name.clone());
+
+        fs::create_dir(path.clone()).unwrap();
+
+        let expected = File::Directory(Directory {
+            name,
+            contents: vec![],
+            accessible: true,
+        });
+
+        let fs = SystemFS::new();
+        assert_eq!(expected, fs.open(&path));
+    }
+
+    #[test]
+    fn open_symlink() {
+        let dir = tempdir().unwrap();
+        let name = random_path();
+        let target = random_path();
+        let path = dir.path().join(name.clone());
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .mode(0o660)
+            .open(dir.path().join(target.clone()))
+            .unwrap();
+        file.write_all(b"a\nb\nc\n").unwrap();
+
+        symlink(target.clone(), path.clone()).unwrap();
+
+        let expected = File::Symlink(Symlink {
+            name,
+            target,
+            accessible: true,
+        });
+
+        let fs = SystemFS::new();
+        assert_eq!(expected, fs.open(&path));
+    }
+
+    #[test]
+    fn open_symlink_inaccessible() {
+        let dir = tempdir().unwrap();
+        let name = random_path();
+        let target = random_path();
+        let path = dir.path().join(name.clone());
+
+        // Point symlink to target which does not exist.
+        symlink(target.clone(), path.clone()).unwrap();
+
+        let expected = File::Symlink(Symlink {
+            name,
+            target,
+            accessible: false,
+        });
+
+        let fs = SystemFS::new();
+        assert_eq!(expected, fs.open(&path));
+    }
+
+    fn random_path() -> String {
+        rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(7)
+            .map(char::from)
+            .collect()
     }
 }
