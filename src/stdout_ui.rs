@@ -75,10 +75,7 @@ impl UI for StdoutUI {
     }
 
     fn summary(&self, summary: &Summary) {
-        print!(
-            "\n{}\n",
-            self.formatter.summary(summary.n_dirs, summary.n_files)
-        );
+        print!("\n{}\n", self.formatter.summary(summary));
     }
 
     fn add_dir(&mut self, depth: usize) {

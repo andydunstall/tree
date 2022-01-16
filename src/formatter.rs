@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use crate::fs::File;
+use crate::summary::Summary;
 
 pub struct Formatter {
     dirs: HashSet<usize>,
@@ -32,8 +33,15 @@ impl Formatter {
         }
     }
 
-    pub fn summary(&self, n_dirs: usize, n_files: usize) -> String {
-        format!("{} directories, {} files\n", n_dirs, n_files)
+    pub fn summary(&self, summary: &Summary) -> String {
+        let mut s = format!("{} directories, {} files", summary.n_dirs, summary.n_files);
+        if self.long_format {
+            s += &format!(", {} bytes", summary.size);
+        }
+        if self.count_lines {
+            s += &format!(", {} lines", summary.line_count);
+        }
+        format!("{}\n", s)
     }
 
     pub fn add_dir(&mut self, depth: usize) {

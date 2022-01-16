@@ -41,8 +41,8 @@ where
             self.ui.remove_dir(depth - 1);
         }
 
-        summary.incr(root.is_dir());
         let file = self.fs.open(root);
+        summary.incr(&file);
         self.ui.file(&file, depth, is_last);
 
         if let File::Directory(dir) = file {

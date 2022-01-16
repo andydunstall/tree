@@ -33,7 +33,7 @@ See `tree --help` for the full CLI.
 
 ## Roadmap
 * Add `-f` flag to filter files shown (`*.java`, `SB*.h*`, ...)
-* Add line count and byte count on `-c` and `-l` flag respectively to the summary
+* Pretty print byte count (KB, MB...)
 * Add glob support
 * Add missing matching rules for `.gitignore` from `https://git-scm.com/docs/gitignore#_pattern_format`
 * Add support for multiple directories (`tree bin/ src/`)
