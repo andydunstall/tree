@@ -33,39 +33,35 @@ impl Args {
         let matches = App::new("tree")
             .version("0.4.0")
             .about("List the contents of directories in a tree-like format.")
+            .arg(Arg::new("root").help("Directory to list").takes_value(true))
+            .arg(Arg::new("all").short('a').help("Show hidden files"))
             .arg(
-                Arg::with_name("root")
-                    .help("Directory to list")
-                    .takes_value(true),
-            )
-            .arg(Arg::with_name("all").short("a").help("Show hidden files"))
-            .arg(
-                Arg::with_name("ignore")
-                    .short("I")
+                Arg::new("ignore")
+                    .short('I')
                     .long("ignore")
-                    .multiple(true)
+                    .multiple_occurrences(true)
                     .help("Path to ignore")
                     .takes_value(true),
             )
             .arg(
-                Arg::with_name("directories")
-                    .short("d")
+                Arg::new("directories")
+                    .short('d')
                     .help("List directories only"),
             )
             .arg(
-                Arg::with_name("gitignore")
-                    .short("g")
+                Arg::new("gitignore")
+                    .short('g')
                     .long("gitignore")
                     .help("Include files listed in the workspace gitignores"),
             )
             .arg(
-                Arg::with_name("long")
-                    .short("l")
+                Arg::new("long")
+                    .short('l')
                     .help("Display listing in long format"),
             )
             .arg(
-                Arg::with_name("count")
-                    .short("c")
+                Arg::new("count")
+                    .short('c')
                     .long("count")
                     .help("Display number of lines in each file"),
             )

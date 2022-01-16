@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 bytecount = "0.6.2"
 colored = "2.0.0"
-clap = "2.33.3"
+clap = "3.0.7"
 dirs = "3.0.1"
 mockall = "0.9.1"
 
